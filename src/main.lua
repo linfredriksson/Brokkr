@@ -28,6 +28,7 @@ function love.load()
 	
 	player = {
 		x = 80, y = 80, direction = 0, speed = 100,
+		keyUp = "up", keyDown = "down", keyRight = "right", keyLeft = "left",
 		spritesheet = love.graphics.newImage("img/characters1.png"),
 		animation = {}
 	}
@@ -46,16 +47,16 @@ function love.keypressed(key)
 end
 
 function love.update(dt)
-	if love.keyboard.isDown("up", "down", "right", "left") then
+	if love.keyboard.isDown(player.keyUp, player.keyDown, player.keyRight, player.keyLeft) then
 		player.animation[player.direction]:update(dt)
 	else
 		player.animation[player.direction]:gotoFrame(2)
 	end
 	
-	if love.keyboard.isDown("up")		then player.direction = 1; player.y = player.y - dt * player.speed end
-	if love.keyboard.isDown("down")	then player.direction = 0; player.y = player.y + dt * player.speed end
-	if love.keyboard.isDown("left")		then player.direction = 3; player.x = player.x - dt * player.speed end
-	if love.keyboard.isDown("right")	then player.direction = 2; player.x = player.x + dt * player.speed end
+	if love.keyboard.isDown(player.keyUp)		then player.direction = 1; player.y = player.y - dt * player.speed end
+	if love.keyboard.isDown(player.keyDown)	then player.direction = 0; player.y = player.y + dt * player.speed end
+	if love.keyboard.isDown(player.keyLeft)	then player.direction = 3; player.x = player.x - dt * player.speed end
+	if love.keyboard.isDown(player.keyRight)	then player.direction = 2; player.x = player.x + dt * player.speed end
 end
 
 function love.draw()
