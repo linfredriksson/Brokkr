@@ -13,8 +13,6 @@ function love.load()
 	tiles[2] = love.graphics.newQuad(0,            tileHeight, tileWidth, tileHeight, tilesetWidth, tilesetHeight)
 	tiles[3] = love.graphics.newQuad(tileWidth, tileHeight, tileWidth, tileHeight, tilesetWidth, tilesetHeight)
 	
-	mapWidth = 12
-	mapHeight = 8
 	map = {
 		{2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2},
 		{2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2},
@@ -61,10 +59,10 @@ end
 
 function love.draw()
 	-- draw map
-	for y = 1, mapHeight  do
-		for x = 1, mapWidth do
-			local id = map[y][x]
-			love.graphics.draw(tileset, tiles[id], x * tileWidth - tileWidth, y * tileHeight - tileHeight)
+	for y = 1, #map  do
+		local row = map[y]
+		for x = 1, #row do
+			love.graphics.draw(tileset, tiles[map[y][x]], x * tileWidth - tileWidth, y * tileHeight - tileHeight)
 		end
 	end
 
