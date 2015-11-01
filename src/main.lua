@@ -1,6 +1,8 @@
 local anim8 = require "anim8"
 
 function love.load()
+	sound = love.audio.newSource("sound/footstep01.ogg")
+
 	tileset = love.graphics.newImage("img/example_tiles.png")
 	local tilesetWidth = tileset:getWidth();
 	local tilesetHeight = tileset:getHeight();
@@ -8,9 +10,9 @@ function love.load()
 	tileHeight = 64
 
 	tiles = {}
-	tiles[0] = love.graphics.newQuad(0,										0, tileWidth, tileHeight, tilesetWidth, tilesetHeight)
-	tiles[1] = love.graphics.newQuad(tileWidth,						0, tileWidth, tileHeight, tilesetWidth, tilesetHeight)
-	tiles[2] = love.graphics.newQuad(0,					tileHeight, tileWidth, tileHeight, tilesetWidth, tilesetHeight)
+	tiles[0] = love.graphics.newQuad(0, 0, tileWidth, tileHeight, tilesetWidth, tilesetHeight)
+	tiles[1] = love.graphics.newQuad(tileWidth, 0, tileWidth, tileHeight, tilesetWidth, tilesetHeight)
+	tiles[2] = love.graphics.newQuad(0, tileHeight, tileWidth, tileHeight, tilesetWidth, tilesetHeight)
 	tiles[3] = love.graphics.newQuad(tileWidth,	tileHeight, tileWidth, tileHeight, tilesetWidth, tilesetHeight)
 
 	map = {
@@ -42,11 +44,15 @@ function love.keypressed(key)
 	if key == "escape" then
 		love.event.quit()
 	end
+	if key == "w" then
+		love.audio.play(sound)
+	end
 end
 
 function love.update(dt)
 	if love.keyboard.isDown(player.keyUp, player.keyDown, player.keyRight, player.keyLeft) then
 		player.animation[player.direction]:update(dt)
+		sound:play()
 	else
 		player.animation[player.direction]:gotoFrame(2)
 	end
