@@ -1,6 +1,22 @@
 local anim8 = require "anim8"
+local Net = require "Net"
+
+local players = {}
 
 function love.load()
+	Net:init("client")
+	Net:connect("127.0.0.1", 6789)
+
+	Net:registerCMD("showLocation",
+		function(table, param, dt, id)
+			table["Param"] = nil
+			table["Command"] = nil
+			for k, v in pairs(table) do
+				players[k] = {}
+				players[k].x, players[k].y = v:match("^(%-?[%d.e]*),(%-?[%d.e]*)$")
+			end
+		end)
+
 	sound = love.audio.newSource("sound/footstep01.ogg")
 
 	tileset = love.graphics.newImage("img/example_tiles.png")
@@ -44,9 +60,22 @@ function love.keypressed(key)
 	if key == "escape" then
 		love.event.quit()
 	end
+
 	if key == "w" then
 		love.audio.play(sound)
 	end
+
+	if key == "up" or key == "down" or key == "right" or key == "left" then
+    Net:send({}, "key_pressed", key, Net.client.ip)
+    print("key_pressed: " .. key)
+  end
+end
+
+function love.keyreleased(key)
+  if key == "up" or key == "down" or key == "right" or key == "left" then
+    Net:send({}, "key_released", key, Net.client.ip)
+    print("key_released: " .. key)
+  end
 end
 
 function love.update(dt)
@@ -66,6 +95,8 @@ function love.update(dt)
 	local intX = math.floor((x + 16) / love.graphics.getWidth() * (12))
 	local intY = math.floor((y + 16) / love.graphics.getHeight() * (8))
 	if map[intY + 1][intX + 1] == 0 then player.x = x; player.y = y end
+
+	Net:update(dt)
 end
 
 function love.draw()
@@ -79,6 +110,10 @@ function love.draw()
 
 	-- draw player
 	player.animation[player.direction]:draw(player.spritesheet, player.x, player.y)
+
+	for k, v in pairs(players) do
+    love.graphics.circle("fill", v.x, v.y, 10, 10)
+  end
 
 	-- print hello world
   love.graphics.print("Hello World", love.graphics.getWidth() * 0.5 - 35, love.graphics.getHeight() * 0.5 - 5)

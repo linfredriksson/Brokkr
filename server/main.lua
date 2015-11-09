@@ -31,7 +31,7 @@ function love.update(dt)
       data.greeted = true
       Net.users[id].x = windowWidth * 0.5
       Net.users[id].y = windowHeight * 0.5
-      Net.users[id].speed = 40
+      Net.users[id].speed = 100
       Net.users[id].key = {}
     end
 
