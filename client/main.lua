@@ -69,6 +69,7 @@ end
 
 function love.keypressed(key)
 	if key == "escape" then
+        Net:disconnect() -- says disconnected instead of timeout
 		love.event.quit()
 	end
 
