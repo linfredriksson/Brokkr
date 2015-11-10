@@ -13,19 +13,35 @@ function love.load()
 		function(table, param, dt, id)
 			table["Param"] = nil
 			table["Command"] = nil
-            local currentPlayers = {}
+
+            -- First loop
+            for k, v in pairs(players) do
+                players[k].alive = false
+            end
+
 			for k, v in pairs(table) do
-				if currentPlayers[k] == nil then -- initiate if not done already
-					currentPlayers[k] = {}
-					currentPlayers[k].animation = {}
-					currentPlayers[k].animation[0] = anim8.newAnimation(grid("1-3", 1), 0.2)
-					currentPlayers[k].animation[1] = anim8.newAnimation(grid("1-3", 4), 0.2)
-					currentPlayers[k].animation[2] = anim8.newAnimation(grid("1-3", 3), 0.2)
-					currentPlayers[k].animation[3] = anim8.newAnimation(grid("1-3", 2), 0.2)
-				end
-				currentPlayers[k].x, currentPlayers[k].y, currentPlayers[k].direction, currentPlayers[k].isMoving = v:match("^(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*)$")
+				if players[k] == nil then -- initiate if not done already
+					players[k] = {}
+					players[k].animation = {}
+					players[k].animation[0] = anim8.newAnimation(grid("1-3", 1), 0.2)
+					players[k].animation[1] = anim8.newAnimation(grid("1-3", 4), 0.2)
+					players[k].animation[2] = anim8.newAnimation(grid("1-3", 3), 0.2)
+					players[k].animation[3] = anim8.newAnimation(grid("1-3", 2), 0.2)
+                end
+                
+                -- player is still in the network
+                players[k].alive = true
+
+				players[k].x, players[k].y, players[k].direction, players[k].isMoving = v:match("^(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*)$")
 			end
-            players = currentPlayers
+
+            -- Second loop
+            for k, v in pairs(players) do
+                if players[k].alive == false then
+                    players[k] = nil
+                end
+            end
+
 		end)
 
 	sound = love.audio.newSource("sound/footstep01.ogg")
@@ -133,7 +149,7 @@ function love.draw()
 
 	-- draw all players
 	for k, v in pairs(players) do
-		v.animation[tonumber(v.direction)]:draw(player.spritesheet, v.x, v.y)
+        v.animation[tonumber(v.direction)]:draw(player.spritesheet, v.x, v.y)
     end
 
 	-- draw player
