@@ -1,14 +1,15 @@
 local Net = require "Net"
 
-local windowWidth = 0
-local windowHeight = 0
+local windowWidth
+local windowHeight
 
 function love.load()
-  windowWidth = love.graphics.getWidth()
-  windowHeight = love.graphics.getHeight()
+  windowWidth = 768 -- client window size
+  windowHeight = 512
 
   Net:init("Server")
   Net:connect(nil, 6789)
+  Net:setMaxPing(3000)
 
   Net:registerCMD("key_pressed", function(table, param, id) keyPressed(id, param, true) end)
   Net:registerCMD("key_released", function(table, param, id) keyPressed(id, param, false) end)
@@ -29,19 +30,26 @@ function love.update(dt)
     if data.greeted ~= true then
       Net:send({}, "print", "Welcome to Brokkr", id)
       data.greeted = true
-      Net.users[id].x = windowWidth * 0.5
-      Net.users[id].y = windowHeight * 0.5
+      Net.users[id].x = windowWidth * 0.5 - 16
+      Net.users[id].y = windowHeight * 0.5 - 16
       Net.users[id].speed = 100
+      Net.users[id].direction = 0
+      Net.users[id].isMoving = 0
       Net.users[id].key = {}
     end
 
     local change = dt * Net.users[id].speed
-    if Net.users[id].key["up"] then Net.users[id].y = Net.users[id].y - change end
-    if Net.users[id].key["down"] then Net.users[id].y = Net.users[id].y + change end
-    if Net.users[id].key["right"] then Net.users[id].x = Net.users[id].x + change end
-    if Net.users[id].key["left"] then Net.users[id].x = Net.users[id].x - change end
+    if Net.users[id].key["up"] then Net.users[id].direction = 1; Net.users[id].y = Net.users[id].y - change end
+    if Net.users[id].key["down"] then Net.users[id].direction = 0; Net.users[id].y = Net.users[id].y + change end
+    if Net.users[id].key["right"] then Net.users[id].direction = 2; Net.users[id].x = Net.users[id].x + change end
+    if Net.users[id].key["left"] then Net.users[id].direction = 3; Net.users[id].x = Net.users[id].x - change end
 
-    clients[id] = Net.users[id].x .. "," .. Net.users[id].y
+    Net.users[id].isMoving = 0
+    if Net.users[id].key["up"] or Net.users[id].key["down"] or Net.users[id].key["right"] or Net.users[id].key["left"] then
+      Net.users[id].isMoving = 1
+    end
+
+    clients[id] = Net.users[id].x .. "," .. Net.users[id].y .. "," .. Net.users[id].direction .. "," .. Net.users[id].isMoving
   end
 
   for id, data in pairs(Net:connectedUsers()) do
