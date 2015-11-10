@@ -69,7 +69,7 @@ end
 
 function love.keypressed(key)
 	if key == "escape" then
-        Net:disconnect() -- says disconnected instead of timeout
+        Net:disconnect() 
 		love.event.quit()
 	end
 
@@ -134,7 +134,6 @@ function love.draw()
 	-- draw all players
 	for k, v in pairs(players) do
 		v.animation[tonumber(v.direction)]:draw(player.spritesheet, v.x, v.y)
-        print("k and v =", k, v)
     end
 
 	-- draw player
