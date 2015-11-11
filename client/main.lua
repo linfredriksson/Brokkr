@@ -3,6 +3,10 @@ local Net = require "Net"
 
 local players = {}
 local grid = nil
+local worldTileWidth = 64
+local worldTileHeight = 64
+local characterTileWidth = 32
+local characterTileHeight = 32
 
 function love.load()
 	Net:init("client")
@@ -23,7 +27,7 @@ function love.load()
 					players[k].animation[2] = anim8.newAnimation(grid("1-3", 3), 0.2)
 					players[k].animation[3] = anim8.newAnimation(grid("1-3", 2), 0.2)
 				end
-				
+
 				-- player is still in the network
 				players[k].alive = true
 
@@ -45,14 +49,12 @@ function love.load()
 	tileset = love.graphics.newImage("img/example_tiles.png")
 	local tilesetWidth = tileset:getWidth();
 	local tilesetHeight = tileset:getHeight();
-	tileWidth = 64
-	tileHeight = 64
 
 	tiles = {}
-	tiles[0] = love.graphics.newQuad(0, 0, tileWidth, tileHeight, tilesetWidth, tilesetHeight)
-	tiles[1] = love.graphics.newQuad(tileWidth, 0, tileWidth, tileHeight, tilesetWidth, tilesetHeight)
-	tiles[2] = love.graphics.newQuad(0, tileHeight, tileWidth, tileHeight, tilesetWidth, tilesetHeight)
-	tiles[3] = love.graphics.newQuad(tileWidth,	tileHeight, tileWidth, tileHeight, tilesetWidth, tilesetHeight)
+	tiles[0] = love.graphics.newQuad(0, 0, worldTileWidth, worldTileHeight, tilesetWidth, tilesetHeight)
+	tiles[1] = love.graphics.newQuad(worldTileWidth, 0, worldTileWidth, worldTileHeight, tilesetWidth, tilesetHeight)
+	tiles[2] = love.graphics.newQuad(0, worldTileHeight, worldTileWidth, worldTileHeight, tilesetWidth, tilesetHeight)
+	tiles[3] = love.graphics.newQuad(worldTileWidth,	worldTileHeight, worldTileWidth, worldTileHeight, tilesetWidth, tilesetHeight)
 
 	map = {
 		{2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2},
@@ -66,13 +68,13 @@ function love.load()
 	}
 
 	player = {
-		x = love.graphics.getWidth() * 0.5 - 16, y = love.graphics.getHeight() * 0.5 - 16, direction = 0, speed = 100,
+		x = love.graphics.getWidth() * 0.5 - characterTileWidth * 0.5, y = love.graphics.getHeight() * 0.5 - characterTileHeight * 0.5, direction = 0, speed = 100,
 		keyUp = "up", keyDown = "down", keyRight = "right", keyLeft = "left",
 		spritesheet = love.graphics.newImage("img/characters1.png"),
 		animation = {}
 	}
 
-	grid = anim8.newGrid(32, 32, player.spritesheet:getWidth(), player.spritesheet:getHeight())
+	grid = anim8.newGrid(characterTileWidth, characterTileHeight, player.spritesheet:getWidth(), player.spritesheet:getHeight())
 	player.animation[0] = anim8.newAnimation(grid("1-3", 1), 0.2)
 	player.animation[1] = anim8.newAnimation(grid("1-3", 4), 0.2)
 	player.animation[2] = anim8.newAnimation(grid("1-3", 3), 0.2)
@@ -81,7 +83,7 @@ end
 
 function love.keypressed(key)
 	if key == "escape" then
-		Net:disconnect() 
+		Net:disconnect()
 		love.event.quit()
 	end
 
@@ -139,7 +141,7 @@ function love.draw()
 	for y = 1, #map  do
 		local row = map[y]
 		for x = 1, #row do
-			love.graphics.draw(tileset, tiles[map[y][x]], x * tileWidth - tileWidth, y * tileHeight - tileHeight)
+			love.graphics.draw(tileset, tiles[map[y][x]], x * worldTileWidth - worldTileWidth, y * worldTileHeight - worldTileHeight)
 		end
 	end
 

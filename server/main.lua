@@ -2,6 +2,10 @@ local Net = require "Net"
 
 local windowWidth
 local windowHeight
+local worldTileWidth = 64
+local worldTileHeight = 64
+local characterTileWidth = 32
+local characterTileHeight = 32
 
 function love.load()
   windowWidth = 768 -- client window size
@@ -30,8 +34,8 @@ function love.update(dt)
     if data.greeted ~= true then
       Net:send({}, "print", "Welcome to Brokkr", id)
       data.greeted = true
-      Net.users[id].x = windowWidth * 0.5 - 16
-      Net.users[id].y = windowHeight * 0.5 - 16
+      Net.users[id].x = windowWidth * 0.5 - characterTileWidth * 0.5
+      Net.users[id].y = windowHeight * 0.5 - characterTileHeight * 0.5
       Net.users[id].speed = 100
       Net.users[id].direction = 0
       Net.users[id].isMoving = 0
