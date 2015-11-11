@@ -13,11 +13,10 @@ function love.load()
 		function(table, param, dt, id)
 			table["Param"] = nil
 			table["Command"] = nil
-
-            -- First loop
-            for k, v in pairs(players) do
-                players[k].alive = false
-            end
+			-- First loop
+			for k, v in pairs(players) do
+				players[k].alive = false
+			end
 
 			for k, v in pairs(table) do
 				if players[k] == nil then -- initiate if not done already
@@ -27,20 +26,20 @@ function love.load()
 					players[k].animation[1] = anim8.newAnimation(grid("1-3", 4), 0.2)
 					players[k].animation[2] = anim8.newAnimation(grid("1-3", 3), 0.2)
 					players[k].animation[3] = anim8.newAnimation(grid("1-3", 2), 0.2)
-                end
-                
-                -- player is still in the network
-                players[k].alive = true
+				end
+				
+				-- player is still in the network
+				players[k].alive = true
 
 				players[k].x, players[k].y, players[k].direction, players[k].isMoving = v:match("^(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*)$")
 			end
 
-            -- Second loop
-            for k, v in pairs(players) do
-                if players[k].alive == false then
-                    players[k] = nil
-                end
-            end
+			-- Second loop
+			for k, v in pairs(players) do
+				if players[k].alive == false then
+					players[k] = nil
+				end
+			end
 
 		end)
 
@@ -85,7 +84,7 @@ end
 
 function love.keypressed(key)
 	if key == "escape" then
-        Net:disconnect() 
+		Net:disconnect() 
 		love.event.quit()
 	end
 
@@ -94,16 +93,16 @@ function love.keypressed(key)
 	end
 
 	if key == "up" or key == "down" or key == "right" or key == "left" then
-    Net:send({}, "key_pressed", key, Net.client.ip)
-    --print("key_pressed: " .. key)
-  end
+		Net:send({}, "key_pressed", key, Net.client.ip)
+		--print("key_pressed: " .. key)
+	end
 end
 
 function love.keyreleased(key)
-  if key == "up" or key == "down" or key == "right" or key == "left" then
-    Net:send({}, "key_released", key, Net.client.ip)
-    --print("key_released: " .. key)
-  end
+	if key == "up" or key == "down" or key == "right" or key == "left" then
+		Net:send({}, "key_released", key, Net.client.ip)
+		--print("key_released: " .. key)
+	end
 end
 
 function love.update(dt)
@@ -149,12 +148,12 @@ function love.draw()
 
 	-- draw all players
 	for k, v in pairs(players) do
-        v.animation[tonumber(v.direction)]:draw(player.spritesheet, v.x, v.y)
-    end
+		v.animation[tonumber(v.direction)]:draw(player.spritesheet, v.x, v.y)
+	end
 
 	-- draw player
 	player.animation[player.direction]:draw(player.spritesheet, player.x, player.y)
 
 	-- print hello world
-  --love.graphics.print("Hello World", love.graphics.getWidth() * 0.5 - 35, love.graphics.getHeight() * 0.5 - 5)
+	--love.graphics.print("Hello World", love.graphics.getWidth() * 0.5 - 35, love.graphics.getHeight() * 0.5 - 5)
 end
