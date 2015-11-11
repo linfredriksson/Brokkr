@@ -23,11 +23,12 @@ function love.load()
 			for k, v in pairs(table) do
 				if players[k] == nil then -- initiate if not done already
 					players[k] = {}
-					players[k].animation = {}
-					players[k].animation[0] = anim8.newAnimation(grid("1-3", 1), 0.2)
-					players[k].animation[1] = anim8.newAnimation(grid("1-3", 4), 0.2)
-					players[k].animation[2] = anim8.newAnimation(grid("1-3", 3), 0.2)
-					players[k].animation[3] = anim8.newAnimation(grid("1-3", 2), 0.2)
+					players[k].animation = {
+						anim8.newAnimation(grid("1-3", 1), 0.2),
+						anim8.newAnimation(grid("1-3", 4), 0.2),
+						anim8.newAnimation(grid("1-3", 3), 0.2),
+						anim8.newAnimation(grid("1-3", 2), 0.2)
+					}
 				end
 
 				-- player is still in the network
@@ -70,17 +71,20 @@ function love.load()
 	}
 
 	player = {
-		x = love.graphics.getWidth() * 0.5 - characterTileWidth * 0.5, y = love.graphics.getHeight() * 0.5 - characterTileHeight * 0.5, direction = 0, speed = 100,
+		x = love.graphics.getWidth() * 0.5 - characterTileWidth * 0.5, y = love.graphics.getHeight() * 0.5 - characterTileHeight * 0.5,
+		direction = 1, speed = 100,
 		keyUp = "up", keyDown = "down", keyRight = "right", keyLeft = "left",
 		spritesheet = love.graphics.newImage("img/characters1.png"),
 		animation = {}
 	}
 
 	grid = anim8.newGrid(characterTileWidth, characterTileHeight, player.spritesheet:getWidth(), player.spritesheet:getHeight())
-	player.animation[0] = anim8.newAnimation(grid("1-3", 1), 0.2)
-	player.animation[1] = anim8.newAnimation(grid("1-3", 4), 0.2)
-	player.animation[2] = anim8.newAnimation(grid("1-3", 3), 0.2)
-	player.animation[3] = anim8.newAnimation(grid("1-3", 2), 0.2)
+	player.animation = {
+		anim8.newAnimation(grid("1-3", 1), 0.2),
+		anim8.newAnimation(grid("1-3", 4), 0.2),
+		anim8.newAnimation(grid("1-3", 3), 0.2),
+		anim8.newAnimation(grid("1-3", 2), 0.2)
+	}
 end
 
 function love.keypressed(key)
@@ -125,10 +129,10 @@ function love.update(dt)
 
 	local x = player.x
 	local y = player.y
-	if love.keyboard.isDown(player.keyUp)		then player.direction = 1; y = y - dt * player.speed end
-	if love.keyboard.isDown(player.keyDown)	then player.direction = 0; y = y + dt * player.speed end
-	if love.keyboard.isDown(player.keyLeft)	then player.direction = 3; x = x - dt * player.speed end
-	if love.keyboard.isDown(player.keyRight)then player.direction = 2; x = x + dt * player.speed end
+	if love.keyboard.isDown(player.keyUp)   then player.direction = 2; y = y - dt * player.speed end
+	if love.keyboard.isDown(player.keyDown)	then player.direction = 1; y = y + dt * player.speed end
+	if love.keyboard.isDown(player.keyLeft)	then player.direction = 4; x = x - dt * player.speed end
+	if love.keyboard.isDown(player.keyRight)then player.direction = 3; x = x + dt * player.speed end
 	--local intX = math.floor((x + 16) / love.graphics.getWidth() * (12))
 	--local intY = math.floor((y + 16) / love.graphics.getHeight() * (8))
 	--if map[intY + 1][intX + 1] == 0 then player.x = x; player.y = y end

@@ -36,16 +36,16 @@ function love.update(dt)
       Net.users[id].x = windowWidth * 0.5 - characterTileWidth * 0.5
       Net.users[id].y = windowHeight * 0.5 - characterTileHeight * 0.5
       Net.users[id].speed = 100
-      Net.users[id].direction = 0
+      Net.users[id].direction = 1
       Net.users[id].isMoving = 0
       Net.users[id].key = {}
     end
 
     local change = dt * Net.users[id].speed
-    if Net.users[id].key["up"] then Net.users[id].direction = 1; Net.users[id].y = Net.users[id].y - change end
-    if Net.users[id].key["down"] then Net.users[id].direction = 0; Net.users[id].y = Net.users[id].y + change end
-    if Net.users[id].key["right"] then Net.users[id].direction = 2; Net.users[id].x = Net.users[id].x + change end
-    if Net.users[id].key["left"] then Net.users[id].direction = 3; Net.users[id].x = Net.users[id].x - change end
+    if Net.users[id].key["up"] then Net.users[id].direction = 2; Net.users[id].y = Net.users[id].y - change end
+    if Net.users[id].key["down"] then Net.users[id].direction = 1; Net.users[id].y = Net.users[id].y + change end
+    if Net.users[id].key["right"] then Net.users[id].direction = 3; Net.users[id].x = Net.users[id].x + change end
+    if Net.users[id].key["left"] then Net.users[id].direction = 4; Net.users[id].x = Net.users[id].x - change end
 
     Net.users[id].isMoving = 0
     if Net.users[id].key["up"] or Net.users[id].key["down"] or Net.users[id].key["right"] or Net.users[id].key["left"] then
