@@ -1,19 +1,18 @@
 local Net = require "Net"
 
-local windowWidth
-local windowHeight
+local windowWidth = 768 -- client window size
+local windowHeight = 512 -- client window size
 local worldTileWidth = 64
 local worldTileHeight = 64
 local characterTileWidth = 32
 local characterTileHeight = 32
+local ip, port = nil, 6789
+local maxPing = 3000
 
 function love.load()
-  windowWidth = 768 -- client window size
-  windowHeight = 512
-
   Net:init("Server")
-  Net:connect(nil, 6789)
-  Net:setMaxPing(3000)
+  Net:connect(ip, port)
+  Net:setMaxPing(maxPing)
 
   Net:registerCMD("key_pressed", function(table, param, id) keyPressed(id, param, true) end)
   Net:registerCMD("key_released", function(table, param, id) keyPressed(id, param, false) end)

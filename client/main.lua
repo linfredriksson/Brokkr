@@ -7,11 +7,13 @@ local worldTileWidth = 64
 local worldTileHeight = 64
 local characterTileWidth = 32
 local characterTileHeight = 32
+local ip, port = "127.0.0.1", 6789
+local maxPing = 1000
 
 function love.load()
 	Net:init("client")
-	Net:connect("127.0.0.1", 6789)
-	Net:setMaxPing(1000)
+	Net:connect(ip, port)
+	Net:setMaxPing(maxPing)
 
 	Net:registerCMD("showLocation",
 		function(table, param, dt, id)
