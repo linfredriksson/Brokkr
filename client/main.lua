@@ -13,10 +13,6 @@ function love.load()
 		function(table, param, dt, id)
 			table["Param"] = nil
 			table["Command"] = nil
-			-- First loop
-			for k, v in pairs(players) do
-				players[k].alive = false
-			end
 
 			for k, v in pairs(table) do
 				if players[k] == nil then -- initiate if not done already
@@ -34,10 +30,11 @@ function love.load()
 				players[k].x, players[k].y, players[k].direction, players[k].isMoving = v:match("^(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*)$")
 			end
 
-			-- Second loop
 			for k, v in pairs(players) do
 				if players[k].alive == false then
 					players[k] = nil
+				else
+					players[k].alive = false
 				end
 			end
 
