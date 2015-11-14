@@ -53,11 +53,12 @@ function love.load()
 	local tilesetWidth = tileset:getWidth();
 	local tilesetHeight = tileset:getHeight();
 
-	tiles = {}
-	tiles[0] = love.graphics.newQuad(0, 0, worldTileWidth, worldTileHeight, tilesetWidth, tilesetHeight)
-	tiles[1] = love.graphics.newQuad(worldTileWidth, 0, worldTileWidth, worldTileHeight, tilesetWidth, tilesetHeight)
-	tiles[2] = love.graphics.newQuad(0, worldTileHeight, worldTileWidth, worldTileHeight, tilesetWidth, tilesetHeight)
-	tiles[3] = love.graphics.newQuad(worldTileWidth,	worldTileHeight, worldTileWidth, worldTileHeight, tilesetWidth, tilesetHeight)
+	tiles = {
+		{walkable = true, destructable = false, img = love.graphics.newQuad(0, 0, worldTileWidth, worldTileHeight, tilesetWidth, tilesetHeight)},
+		{walkable = true, destructable = false, img = love.graphics.newQuad(worldTileWidth, 0, worldTileWidth, worldTileHeight, tilesetWidth, tilesetHeight)},
+		{walkable = true, destructable = false, img = love.graphics.newQuad(0, worldTileHeight, worldTileWidth, worldTileHeight, tilesetWidth, tilesetHeight)},
+		{walkable = true, destructable = false, img = love.graphics.newQuad(worldTileWidth,	worldTileHeight, worldTileWidth, worldTileHeight, tilesetWidth, tilesetHeight)}
+	}
 
 	map = {
 		{2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2},
@@ -147,7 +148,7 @@ function love.draw()
 	for y = 1, #map  do
 		local row = map[y]
 		for x = 1, #row do
-			love.graphics.draw(tileset, tiles[map[y][x]], x * worldTileWidth - worldTileWidth, y * worldTileHeight - worldTileHeight)
+			love.graphics.draw(tileset, tiles[map[y][x] + 1].img, x * worldTileWidth - worldTileWidth, y * worldTileHeight - worldTileHeight)
 		end
 	end
 
