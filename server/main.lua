@@ -9,6 +9,7 @@ local characterTileHeight = 32
 local ip, port = nil, 6789
 local maxPing = 3000
 local totalDeltaTime = 0
+local updateTimeStep = 0.01
 
 function love.load()
   Net:init("Server")
@@ -27,9 +28,9 @@ end
 
 function love.update(dt)
   totalDeltaTime = totalDeltaTime + dt
-  while totalDeltaTime > 0.01 do
-    love_update(0.01)
-    totalDeltaTime = totalDeltaTime - 0.01
+  while totalDeltaTime > updateTimeStep do
+    love_update(updateTimeStep)
+    totalDeltaTime = totalDeltaTime - updateTimeStep
   end
 end
 
