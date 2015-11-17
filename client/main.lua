@@ -2,7 +2,7 @@ local anim8 = require "anim8"
 local Net = require "Net"
 
 local players = {}
-local grid = nil
+local worldTileGrid = nil
 local worldTileWidth = 64
 local worldTileHeight = 64
 local characterTileWidth = 32
@@ -24,10 +24,10 @@ function love.load()
 				if players[k] == nil then -- initiate if not done already
 					players[k] = {}
 					players[k].animation = {
-						anim8.newAnimation(grid("1-3", 1), 0.2),
-						anim8.newAnimation(grid("1-3", 4), 0.2),
-						anim8.newAnimation(grid("1-3", 3), 0.2),
-						anim8.newAnimation(grid("1-3", 2), 0.2)
+						anim8.newAnimation(worldTileGrid("1-3", 1), 0.2),
+						anim8.newAnimation(worldTileGrid("1-3", 4), 0.2),
+						anim8.newAnimation(worldTileGrid("1-3", 3), 0.2),
+						anim8.newAnimation(worldTileGrid("1-3", 2), 0.2)
 					}
 				end
 
@@ -79,12 +79,12 @@ function love.load()
 		animation = {}
 	}
 
-	grid = anim8.newGrid(characterTileWidth, characterTileHeight, player.spritesheet:getWidth(), player.spritesheet:getHeight())
+	worldTileGrid = anim8.newGrid(characterTileWidth, characterTileHeight, player.spritesheet:getWidth(), player.spritesheet:getHeight())
 	player.animation = {
-		anim8.newAnimation(grid("1-3", 1), 0.2),
-		anim8.newAnimation(grid("1-3", 4), 0.2),
-		anim8.newAnimation(grid("1-3", 3), 0.2),
-		anim8.newAnimation(grid("1-3", 2), 0.2)
+		anim8.newAnimation(worldTileGrid("1-3", 1), 0.2),
+		anim8.newAnimation(worldTileGrid("1-3", 4), 0.2),
+		anim8.newAnimation(worldTileGrid("1-3", 3), 0.2),
+		anim8.newAnimation(worldTileGrid("1-3", 2), 0.2)
 	}
 end
 
