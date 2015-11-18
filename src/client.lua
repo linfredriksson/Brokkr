@@ -131,17 +131,10 @@ client.update = function(self, dt)
 		self.player.animation[self.player.direction]:gotoFrame(2)
 	end
 
-	local x = self.player.x
-	local y = self.player.y
-	if love.keyboard.isDown(self.player.keyUp)   then self.player.direction = 2; y = y - dt * self.player.speed end
-	if love.keyboard.isDown(self.player.keyDown)	then self.player.direction = 1; y = y + dt * self.player.speed end
-	if love.keyboard.isDown(self.player.keyLeft)	then self.player.direction = 4; x = x - dt * self.player.speed end
-	if love.keyboard.isDown(self.player.keyRight)then self.player.direction = 3; x = x + dt * self.player.speed end
-	--local intX = math.floor((x + 16) / love.graphics.getWidth() * (12))
-	--local intY = math.floor((y + 16) / love.graphics.getHeight() * (8))
-	--if map[intY + 1][intX + 1] == 0 then player.x = x; player.y = y end
-	self.player.x = x
-	self.player.y = y
+	if love.keyboard.isDown(self.player.keyUp) then self.player.direction = 2; self.player.y = self.player.y - dt * self.player.speed end
+	if love.keyboard.isDown(self.player.keyDown) then self.player.direction = 1; self.player.y = self.player.y + dt * self.player.speed end
+	if love.keyboard.isDown(self.player.keyLeft) then self.player.direction = 4; self.player.x = self.player.x - dt * self.player.speed end
+	if love.keyboard.isDown(self.player.keyRight) then self.player.direction = 3; self.player.x = self.player.x + dt * self.player.speed end
 
 	Net:update(dt)
 end
@@ -162,9 +155,6 @@ client.draw = function(self)
 
 	-- draw player
 	self.player.animation[self.player.direction]:draw(self.player.spritesheet, self.player.x, self.player.y)
-
-	-- print hello world
-	--love.graphics.print("Hello World", love.graphics.getWidth() * 0.5 - 35, love.graphics.getHeight() * 0.5 - 5)
 end
 
 return client
