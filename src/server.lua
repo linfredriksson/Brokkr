@@ -87,10 +87,12 @@ server.fixedUpdate = function(self, dt)
 end
 
 server.draw = function(self)
-  love.graphics.setColor(255, 255, 255, 255)
-  love.graphics.rectangle("fill", 0, 0, 1000, 1000)
-  love.graphics.setColor(0, 0, 0, 255)
-  love.graphics.print("server", 10, love.graphics.getHeight() - 60)
+  love.graphics.print("SERVER", 10, 10)
+
+	-- draw dots for all players
+	for k, v in pairs(Net.users) do
+		love.graphics.circle("fill", v.x, v.y, self.characterTileWidth * 0.5)
+	end
 end
 
 return server
