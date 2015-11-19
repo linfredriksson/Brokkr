@@ -25,7 +25,7 @@ server.mousepressed = function(self, x, y, button)
 end
 
 server.keyPressed = function(self, id, key, value)
-  if Net.users[id] and (key == "up" or key == "down" or key == "right" or key == "left") then
+  if Net.users[id] and (key == "up" or key == "down" or key == "right" or key == "left" or key == " ") then
     Net.users[id].key[key] = value
   end
 end
@@ -59,6 +59,12 @@ server.fixedUpdate = function(self, dt)
       Net.users[id].direction = 1
       Net.users[id].isMoving = 0
       Net.users[id].key = {}
+    end
+
+    -- place bomb key
+    if Net.users[id].key[" "] then
+      print("do bomb stuff")
+      Net.users[id].key[" "] = false
     end
 
     local change = dt * Net.users[id].speed

@@ -82,20 +82,14 @@ client.keypressed = function(self, key)
 		love.event.quit()
 	end
 
-	if key == "w" then
-		love.audio.play(self.sound)
-	end
-
-	if key == "up" or key == "down" or key == "right" or key == "left" then
+	if key == "up" or key == "down" or key == "right" or key == "left" or key == " " then
 		Net:send({}, "key_pressed", key, Net.client.ip)
-		--print("key_pressed: " .. key)
 	end
 end
 
 client.keyreleased = function(self, key)
   if key == "up" or key == "down" or key == "right" or key == "left" then
 		Net:send({}, "key_released", key, Net.client.ip)
-		--print("key_released: " .. key)
 	end
 end
 
