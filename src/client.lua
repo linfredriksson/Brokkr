@@ -3,6 +3,8 @@ local Net = require "dependencies/Net"
 local client = {}
 
 client.load = function(self)
+  self.windowWidth = love.graphics.getWidth()
+  self.windowHeight = love.graphics.getHeight()
   self.players = {}
   self.worldTileGrid = nil
   self.worldTileWidth = 64
@@ -72,7 +74,7 @@ client.load = function(self)
 	}
 
 	self.player = {
-		x = love.graphics.getWidth() * 0.5 - self.characterTileWidth * 0.5, y = love.graphics.getHeight() * 0.5 - self.characterTileHeight * 0.5,
+		x = self.windowWidth * 0.5 - self.characterTileWidth * 0.5, y = self.windowHeight * 0.5 - self.characterTileHeight * 0.5,
 		direction = 1, speed = 100,
 		keyUp = "up", keyDown = "down", keyRight = "right", keyLeft = "left",
 		spritesheet = love.graphics.newImage("image/characters1.png"),

@@ -2,8 +2,8 @@ local Net = require "dependencies/Net"
 local server = {}
 
 server.load = function(self)
-  self.windowWidth = 768 -- client window size
-  self.windowHeight = 512 -- client window size
+  self.windowWidth = love.graphics.getWidth()
+  self.windowHeight = love.graphics.getHeight()
   self.worldTileWidth = 64
   self.worldTileHeight = 64
   self.characterTileWidth = 32
