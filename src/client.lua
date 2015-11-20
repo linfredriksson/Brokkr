@@ -1,5 +1,6 @@
 local anim8 = require "dependencies/anim8"
 local Net = require "dependencies/Net"
+local Map = require "map"
 local client = {}
 
 client.load = function(self)
@@ -50,28 +51,10 @@ client.load = function(self)
 		end)
 
 	self.sound = love.audio.newSource("sound/footstep01.ogg")
-	self.tileset = love.graphics.newImage("image/example_tiles.png")
 
-	local tilesetWidth = self.tileset:getWidth();
-	local tilesetHeight = self.tileset:getHeight();
-
-	self.tiles = {
-		{walkable = true, destructable = false, img = love.graphics.newQuad(0, 0, self.worldTileWidth, self.worldTileHeight, tilesetWidth, tilesetHeight)},
-		{walkable = true, destructable = false, img = love.graphics.newQuad(self.worldTileWidth, 0, self.worldTileWidth, self.worldTileHeight, tilesetWidth, tilesetHeight)},
-		{walkable = true, destructable = false, img = love.graphics.newQuad(0, self.worldTileHeight, self.worldTileWidth, self.worldTileHeight, tilesetWidth, tilesetHeight)},
-		{walkable = true, destructable = false, img = love.graphics.newQuad(self.worldTileWidth,	self.worldTileHeight, self.worldTileWidth, self.worldTileHeight, tilesetWidth, tilesetHeight)}
-	}
-
-	self.map = {
-		{2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2},
-		{2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2},
-		{2, 0, 3, 0, 0, 0, 0, 0, 0, 3, 0, 2},
-		{2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2},
-		{2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2},
-		{2, 0, 3, 0, 0, 0, 0, 0, 0, 3, 0, 2},
-		{2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2},
-		{2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}
-	}
+	local mapName = "example"
+	--local mapName = "de" -- To check error
+	self.tileset, self.tiles, self.map = Map:chooseMap(mapName, self.worldTileWidth, self.worldTileHeight)
 
 	self.player = {
 		x = self.windowWidth * 0.5 - self.characterTileWidth * 0.5, y = self.windowHeight * 0.5 - self.characterTileHeight * 0.5,
