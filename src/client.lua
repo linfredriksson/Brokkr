@@ -8,8 +8,10 @@ client.load = function(self)
   self.windowHeight = love.graphics.getHeight()
   self.players = {}
   self.worldTileGrid = nil
-  self.worldTileWidth = 64
-  self.worldTileHeight = 64
+  self.worldTileWidth = 32
+  self.worldTileHeight = 32
+  self.worldWidth = 24
+  self.worldHeight = 16
   self.characterTileWidth = 32
   self.characterTileHeight = 32
   self.ip, self.port = "127.0.0.1", 6789
@@ -52,9 +54,9 @@ client.load = function(self)
 
 	self.sound = love.audio.newSource("sound/footstep01.ogg")
 
-	local mapName = "example"
+	local mapName = "empty"
 	--local mapName = "de" -- To check error
-	self.tileset, self.tiles, self.map = Map:chooseMap(mapName, self.worldTileWidth, self.worldTileHeight)
+	self.tileset, self.tiles, self.map = Map:chooseMap(mapName, self.worldTileWidth, self.worldTileHeight, self.worldWidth, self.worldHeight)
 
 	self.player = {
 		x = self.windowWidth * 0.5 - self.characterTileWidth * 0.5, y = self.windowHeight * 0.5 - self.characterTileHeight * 0.5,

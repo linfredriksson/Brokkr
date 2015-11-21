@@ -1,12 +1,12 @@
 local map = {}
 
-function map:chooseMap(mapName, worldTileWidth, worldTileHeight)
+function map:chooseMap(mapName, worldTileWidth, worldTileHeight, width, height)
 	local map = nil
-	if mapName == "example" then map = exampleMap()
-	else error("There is no such a map called \""..mapName.."\"!") 
+	if mapName == "empty" then map = emptyMap(width, height)
+	else error("There is no such a map called \""..mapName.."\"!")
 	end
 
-	local tileset = love.graphics.newImage("image/example_tiles.png")
+	local tileset = love.graphics.newImage("image/example_tiles_small.png")
 	local tilesetWidth = tileset:getWidth();
 	local tilesetHeight = tileset:getHeight();
 
@@ -20,17 +20,21 @@ function map:chooseMap(mapName, worldTileWidth, worldTileHeight)
 	return tileset, tiles, map
 end
 
-function exampleMap()
-	return {
-		{2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2},
-		{2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2},
-		{2, 0, 3, 0, 0, 0, 0, 0, 0, 3, 0, 2},
-		{2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2},
-		{2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2},
-		{2, 0, 3, 0, 0, 0, 0, 0, 0, 3, 0, 2},
-		{2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2},
-		{2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}
-	}
+function emptyMap(width, height)
+	local m = {}
+	local wall = 2
+	local floor = 0
+	for y = 1, height do
+		m[y]= {}
+		for x = 1, width do m[y][x] = floor end
+		m[y][width] = wall
+		m[y][1] = wall
+	end
+	for i = 1, width do
+		m[height][i] = wall
+		m[1][i] = wall
+	end
+	return m
 end
 
 return map
