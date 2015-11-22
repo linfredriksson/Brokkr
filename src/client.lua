@@ -31,7 +31,7 @@ client.load = function(self)
 			for k, v in pairs(table) do
 				if self.players[k] == nil then -- initiate if not done already
 					self.players[k] = {}
-					self.players[k].animation = self:generateRandomCharacterAnimation(0.6)
+					self.players[k].animation = self:generateCharacterAnimation(1, 0.6)
 				end
 
 				-- player is still in the network
@@ -65,7 +65,7 @@ client.load = function(self)
 
 	self.characterTileGrid = anim8.newGrid(self.characterTileWidth, self.characterTileHeight, self.player.spritesheet:getWidth(), self.player.spritesheet:getHeight())
 	--self.player.animation = self:generateCharacterAnimation(1, 0.6)
-  self.player.animation = self:generateRandomCharacterAnimation(0.6)
+  self.player.animation = self:generateCharacterAnimation(1, 0.6)
 end
 
 client.generateRandomCharacterAnimation = function(self, duration)

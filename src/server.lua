@@ -89,9 +89,13 @@ end
 server.draw = function(self)
   love.graphics.print("SERVER", 10, 10)
 
+  local textY = 30
 	-- draw dots for all players
 	for k, v in pairs(Net.users) do
 		love.graphics.circle("fill", v.x, v.y, self.characterTileWidth * 0.5)
+
+    love.graphics.print(k .. ", " .. v.x .. ":" .. v.y, 10, textY)
+    textY = textY + 20
 	end
 end
 
