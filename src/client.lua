@@ -3,11 +3,13 @@ local Net = require "dependencies/Net"
 local Map = require "map"
 local client = {}
 
+math.randomseed(os.time())
+
 client.load = function(self)
   self.windowWidth = love.graphics.getWidth()
   self.windowHeight = love.graphics.getHeight()
   self.players = {}
-  self.worldTileGrid = nil
+  self.characterTileGrid = nil
   self.worldTileWidth = 32
   self.worldTileHeight = 32
   self.worldWidth = 24
@@ -29,12 +31,7 @@ client.load = function(self)
 			for k, v in pairs(table) do
 				if self.players[k] == nil then -- initiate if not done already
 					self.players[k] = {}
-					self.players[k].animation = {
-						anim8.newAnimation(self.worldTileGrid("1-3", 1), 0.2),
-						anim8.newAnimation(self.worldTileGrid("1-3", 4), 0.2),
-						anim8.newAnimation(self.worldTileGrid("1-3", 3), 0.2),
-						anim8.newAnimation(self.worldTileGrid("1-3", 2), 0.2)
-					}
+					self.players[k].animation = self:generateRandomCharacterAnimation(0.6)
 				end
 
 				-- player is still in the network
@@ -66,13 +63,26 @@ client.load = function(self)
 		animation = {}
 	}
 
-	self.worldTileGrid = anim8.newGrid(self.characterTileWidth, self.characterTileHeight, self.player.spritesheet:getWidth(), self.player.spritesheet:getHeight())
-	self.player.animation = {
-		anim8.newAnimation(self.worldTileGrid("1-3", 1), 0.2),
-		anim8.newAnimation(self.worldTileGrid("1-3", 4), 0.2),
-		anim8.newAnimation(self.worldTileGrid("1-3", 3), 0.2),
-		anim8.newAnimation(self.worldTileGrid("1-3", 2), 0.2)
-	}
+	self.characterTileGrid = anim8.newGrid(self.characterTileWidth, self.characterTileHeight, self.player.spritesheet:getWidth(), self.player.spritesheet:getHeight())
+	--self.player.animation = self:generateCharacterAnimation(1, 0.6)
+  self.player.animation = self:generateRandomCharacterAnimation(0.6)
+end
+
+client.generateRandomCharacterAnimation = function(self, duration)
+  return self:generateCharacterAnimation(math.random(7), duration)
+end
+
+client.generateCharacterAnimation = function(self, id, duration)
+  local frameDuration = duration / 3
+  local row = math.floor(id / 5) * 4
+  local col = 1 + ((id - 1) % 4)
+  col = 1 + ((col - 1) * 3) .. "-" .. 3 + ((col - 1) * 3)
+  return {
+    anim8.newAnimation(self.characterTileGrid(col, row + 1), frameDuration),
+    anim8.newAnimation(self.characterTileGrid(col, row + 4), frameDuration),
+    anim8.newAnimation(self.characterTileGrid(col, row + 3), frameDuration),
+    anim8.newAnimation(self.characterTileGrid(col, row + 2), frameDuration)
+  }
 end
 
 client.mousepressed = function(self, x, y, button)
