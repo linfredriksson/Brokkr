@@ -21,6 +21,13 @@ client.load = function(self)
 	self.mapName = "empty" -- Nil is not an option, needs a default value
 	self.doNtimes = 0 -- For updating the map
 
+	-- Define keys for different actions
+	self.actions = {up = "up", down = "down", left = "left", right = "right", bomb = " "}
+
+	-- Inverse of self.action, used to check if a pressed key is bound to a action
+	self.keys = {}
+	for k, v in pairs(self.actions) do self.keys[v] = k end
+
 	Net:init("client")
 	Net:connect(self.ip, self.port)
 	Net:setMaxPing(self.maxPing)
@@ -66,13 +73,11 @@ client.load = function(self)
 	self.player = {
 		x = self.windowWidth * 0.5 - self.characterTileWidth * 0.5, y = self.windowHeight * 0.5 - self.characterTileHeight * 0.5,
 		direction = 1, speed = 100,
-		keyUp = "up", keyDown = "down", keyRight = "right", keyLeft = "left",
 		spritesheet = love.graphics.newImage("image/characters1.png"),
 		animation = {}
 	}
 
 	self.characterTileGrid = anim8.newGrid(self.characterTileWidth, self.characterTileHeight, self.player.spritesheet:getWidth(), self.player.spritesheet:getHeight())
-	--self.player.animation = self:generateCharacterAnimation(1, 0.6)
 	self.player.animation = self:generateCharacterAnimation(1, 0.6)
 end
 
@@ -102,15 +107,11 @@ client.keypressed = function(self, key)
 		love.event.quit()
 	end
 
-	if key == "up" or key == "down" or key == "right" or key == "left" or key == " " then
-		Net:send({}, "key_pressed", key, Net.client.ip)
-	end
+	if self.keys[key] ~= nil then Net:send({}, "key_pressed", self.keys[key], Net.client.ip) end
 end
 
 client.keyreleased = function(self, key)
-	if key == "up" or key == "down" or key == "right" or key == "left" then
-		Net:send({}, "key_released", key, Net.client.ip)
-	end
+	if self.keys[key] ~= nil then Net:send({}, "key_released", self.keys[key], Net.client.ip) end
 end
 
 client.update = function(self, dt)
@@ -123,17 +124,17 @@ client.update = function(self, dt)
 		end
 	end
 
-	if love.keyboard.isDown(self.player.keyUp, self.player.keyDown, self.player.keyRight, self.player.keyLeft) then
+	if love.keyboard.isDown(self.actions.up, self.actions.down, self.actions.right, self.actions.left) then
 		self.player.animation[self.player.direction]:update(dt)
 		--sound:play()
 	else
 		self.player.animation[self.player.direction]:gotoFrame(2)
 	end
 
-	if love.keyboard.isDown(self.player.keyUp) then self.player.direction = 2; self.player.y = self.player.y - dt * self.player.speed end
-	if love.keyboard.isDown(self.player.keyDown) then self.player.direction = 1; self.player.y = self.player.y + dt * self.player.speed end
-	if love.keyboard.isDown(self.player.keyLeft) then self.player.direction = 4; self.player.x = self.player.x - dt * self.player.speed end
-	if love.keyboard.isDown(self.player.keyRight) then self.player.direction = 3; self.player.x = self.player.x + dt * self.player.speed end
+	if love.keyboard.isDown(self.actions.up) then self.player.direction = 2; self.player.y = self.player.y - dt * self.player.speed end
+	if love.keyboard.isDown(self.actions.down) then self.player.direction = 1; self.player.y = self.player.y + dt * self.player.speed end
+	if love.keyboard.isDown(self.actions.left) then self.player.direction = 4; self.player.x = self.player.x - dt * self.player.speed end
+	if love.keyboard.isDown(self.actions.right) then self.player.direction = 3; self.player.x = self.player.x + dt * self.player.speed end
 
 	Net:update(dt)
 

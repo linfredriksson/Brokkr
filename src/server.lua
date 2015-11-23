@@ -17,15 +17,15 @@ server.load = function(self)
 	Net:connect(self.ip, self.port)
 	Net:setMaxPing(self.maxPing)
 
-	Net:registerCMD("key_pressed", function(table, param, id) self:keyPressed(id, param, true) end)
-	Net:registerCMD("key_released", function(table, param, id) self:keyPressed(id, param, false) end)
+	Net:registerCMD("key_pressed", function(table, param, id) self:keyRecieved(id, param, true) end)
+	Net:registerCMD("key_released", function(table, param, id) self:keyRecieved(id, param, false) end)
 end
 
 server.mousepressed = function(self, x, y, button)
 end
 
-server.keyPressed = function(self, id, key, value)
-	if Net.users[id] and (key == "up" or key == "down" or key == "right" or key == "left" or key == " ") then
+server.keyRecieved = function(self, id, key, value)
+	if Net.users[id] and (key == "up" or key == "down" or key == "right" or key == "left" or key == "bomb") then
 		Net.users[id].key[key] = value
 	end
 end
@@ -65,9 +65,9 @@ server.fixedUpdate = function(self, dt)
 		end
 
 		-- place bomb key
-		if Net.users[id].key[" "] then
+		if Net.users[id].key["bomb"] then
 			print("do bomb stuff")
-			Net.users[id].key[" "] = false
+			Net.users[id].key["bomb"] = false
 		end
 
 		local change = dt * Net.users[id].speed
