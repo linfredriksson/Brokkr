@@ -81,16 +81,16 @@ client.load = function(self)
 end
 
 client.generateCharacterAnimation = function(self, id, duration)
-  local frameDuration = duration / 3
-  local row = math.floor(id / 5) * 4
-  local col = (id - 1) % 4
-  col = 1 + col * 3 .. "-" .. 3 + col * 3
-  return {
-    anim8.newAnimation(self.characterTileGrid(col, row + 1), frameDuration),
-    anim8.newAnimation(self.characterTileGrid(col, row + 4), frameDuration),
-    anim8.newAnimation(self.characterTileGrid(col, row + 3), frameDuration),
-    anim8.newAnimation(self.characterTileGrid(col, row + 2), frameDuration)
-  }
+	local frameDuration = duration / 3
+	local row = math.floor(id / 5) * 4
+	local col = (id - 1) % 4
+	col = 1 + col * 3 .. "-" .. 3 + col * 3
+	return {
+		anim8.newAnimation(self.characterTileGrid(col, row + 1), frameDuration),
+		anim8.newAnimation(self.characterTileGrid(col, row + 4), frameDuration),
+		anim8.newAnimation(self.characterTileGrid(col, row + 3), frameDuration),
+		anim8.newAnimation(self.characterTileGrid(col, row + 2), frameDuration)
+	}
 end
 
 client.mousepressed = function(self, x, y, button)
@@ -108,13 +108,13 @@ client.keypressed = function(self, key)
 end
 
 client.keyreleased = function(self, key)
-  if key == "up" or key == "down" or key == "right" or key == "left" then
+	if key == "up" or key == "down" or key == "right" or key == "left" then
 		Net:send({}, "key_released", key, Net.client.ip)
 	end
 end
 
 client.update = function(self, dt)
-  for k, v in pairs(self.players) do
+	for k, v in pairs(self.players) do
 		if v.isMoving == "1" then
 			v.animation[tonumber(v.direction)]:update(dt)
 			--sound:play()
@@ -148,7 +148,7 @@ client.update = function(self, dt)
 end
 
 client.draw = function(self)
-  -- draw map
+	-- draw map
 	for y = 1, #self.map  do
 		local row = self.map[y]
 		for x = 1, #row do
