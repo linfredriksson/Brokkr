@@ -25,7 +25,7 @@ client.load = function(self)
 	Net:connect(self.ip, self.port)
 	Net:setMaxPing(self.maxPing)
 
-	Net:registerCMD("getMapName", 
+	Net:registerCMD("getMapName",
 		function(table, param, dt, id)
 			self.mapName = table["map"]
 			--print("got the name:", self.mapName)
@@ -83,8 +83,8 @@ end
 client.generateCharacterAnimation = function(self, id, duration)
   local frameDuration = duration / 3
   local row = math.floor(id / 5) * 4
-  local col = 1 + ((id - 1) % 4)
-  col = 1 + ((col - 1) * 3) .. "-" .. 3 + ((col - 1) * 3)
+  local col = (id - 1) % 4
+  col = 1 + col * 3 .. "-" .. 3 + col * 3
   return {
     anim8.newAnimation(self.characterTileGrid(col, row + 1), frameDuration),
     anim8.newAnimation(self.characterTileGrid(col, row + 4), frameDuration),
