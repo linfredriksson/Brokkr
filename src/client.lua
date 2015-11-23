@@ -97,7 +97,7 @@ client.mousepressed = function(self, x, y, button)
 end
 
 client.keypressed = function(self, key)
-  if key == "escape" then
+	if key == "escape" then
 		Net:disconnect()
 		love.event.quit()
 	end
@@ -114,7 +114,6 @@ client.keyreleased = function(self, key)
 end
 
 client.update = function(self, dt)
-	
   for k, v in pairs(self.players) do
 		if v.isMoving == "1" then
 			v.animation[tonumber(v.direction)]:update(dt)
@@ -164,6 +163,10 @@ client.draw = function(self)
 
 	-- draw player
 	self.player.animation[self.player.direction]:draw(self.player.spritesheet, self.player.x, self.player.y)
+end
+
+client.quit = function(self)
+	Net:disconnect()
 end
 
 return client

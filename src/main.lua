@@ -23,3 +23,7 @@ end
 function love.draw()
   run:draw()
 end
+
+function love.quit()
+	run:quit()
+end
