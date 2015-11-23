@@ -58,25 +58,25 @@ client.load = function(self)
 
 		end)
 
-		self.sound = love.audio.newSource("sound/footstep01.ogg")
+	self.sound = love.audio.newSource("sound/footstep01.ogg")
 
-		--print("mapname before choosemap,", self.mapName)
-		--self.tileset, self.tiles, self.map = Map:chooseMap(self.mapName, self.worldTileWidth, self.worldTileHeight, self.worldWidth, self.worldHeight)
+	--print("mapname before choosemap,", self.mapName)
+	--self.tileset, self.tiles, self.map = Map:chooseMap(self.mapName, self.worldTileWidth, self.worldTileHeight, self.worldWidth, self.worldHeight)
 
-		self.player = {
-			x = self.windowWidth * 0.5 - self.characterTileWidth * 0.5, y = self.windowHeight * 0.5 - self.characterTileHeight * 0.5,
-			direction = 1, speed = 100,
-			keyUp = "up", keyDown = "down", keyRight = "right", keyLeft = "left",
-			spritesheet = love.graphics.newImage("image/characters1.png"),
-			animation = {}
-		}
+	self.player = {
+		x = self.windowWidth * 0.5 - self.characterTileWidth * 0.5, y = self.windowHeight * 0.5 - self.characterTileHeight * 0.5,
+		direction = 1, speed = 100,
+		keyUp = "up", keyDown = "down", keyRight = "right", keyLeft = "left",
+		spritesheet = love.graphics.newImage("image/characters1.png"),
+		animation = {}
+	}
 
-		self.characterTileGrid = anim8.newGrid(self.characterTileWidth, self.characterTileHeight, self.player.spritesheet:getWidth(), self.player.spritesheet:getHeight())
-		--self.player.animation = self:generateCharacterAnimation(1, 0.6)
-		self.player.animation = self:generateCharacterAnimation(1, 0.6)
-	end
+	self.characterTileGrid = anim8.newGrid(self.characterTileWidth, self.characterTileHeight, self.player.spritesheet:getWidth(), self.player.spritesheet:getHeight())
+	--self.player.animation = self:generateCharacterAnimation(1, 0.6)
+	self.player.animation = self:generateCharacterAnimation(1, 0.6)
+end
 
-	client.generateRandomCharacterAnimation = function(self, duration)
+client.generateRandomCharacterAnimation = function(self, duration)
 	return self:generateCharacterAnimation(math.random(7), duration)
 end
 
