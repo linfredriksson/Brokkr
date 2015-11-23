@@ -52,6 +52,9 @@ server.fixedUpdate = function(self, dt)
   for id, data in pairs(Net:connectedUsers()) do
     if data.greeted ~= true then
       Net:send({}, "print", "Welcome to Brokkr", id)
+	  local mapTable, mapName = {}, "full"
+	  mapTable["map"] = mapName
+	  Net:send(mapTable, "getMapName", "", id)
       data.greeted = true
       Net.users[id].x = self.windowWidth * 0.5 - self.characterTileWidth * 0.5
       Net.users[id].y = self.windowHeight * 0.5 - self.characterTileHeight * 0.5
