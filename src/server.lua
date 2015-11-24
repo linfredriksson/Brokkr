@@ -12,6 +12,8 @@ server.load = function(self)
 	self.maxPing = 3000
 	self.totalDeltaTime = 0
 	self.updateTimeStep = 0.01
+	self.mapTable = {}
+	self.mapTable["map"] = "full"
 
 	Net:init("Server")
 	Net:connect(self.ip, self.port)
@@ -52,9 +54,7 @@ server.fixedUpdate = function(self, dt)
 	for id, data in pairs(Net:connectedUsers()) do
 		if data.greeted ~= true then
 			Net:send({}, "print", "Welcome to Brokkr! Now the server is up.", id)
-			local mapTable, mapName = {}, "full"
-			mapTable["map"] = mapName
-			Net:send(mapTable, "getMapName", "", id)
+			Net:send(self.mapTable, "getMapName", "", id)
 			data.greeted = true
 			Net.users[id].x = self.windowWidth * 0.5 - self.characterTileWidth * 0.5
 			Net.users[id].y = self.windowHeight * 0.5 - self.characterTileHeight * 0.5

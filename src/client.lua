@@ -19,7 +19,7 @@ client.load = function(self)
 	self.ip, self.port = "127.0.0.1", 6789
 	self.maxPing = 1000
 	self.mapName = "empty" -- Nil is not an option, needs a default value
-	self.doNtimes = 0 -- For updating the map
+	self.mapNotOK = true -- For updating the map
 
 	-- Define keys for different actions
 	self.actions = {up = "up", down = "down", left = "left", right = "right", bomb = " "}
@@ -35,7 +35,7 @@ client.load = function(self)
 	Net:registerCMD("getMapName",
 		function(table, param, dt, id)
 			self.mapName = table["map"]
-			--print("got the name:", self.mapName)
+			self.mapReceived = true
 		end)
 
 	Net:registerCMD("showLocation",
@@ -67,8 +67,8 @@ client.load = function(self)
 
 	self.sound = love.audio.newSource("sound/footstep01.ogg")
 
-	--print("mapname before choosemap,", self.mapName)
-	--self.tileset, self.tiles, self.map = Map:chooseMap(self.mapName, self.worldTileWidth, self.worldTileHeight, self.worldWidth, self.worldHeight)
+	-- Set the default map
+	self.tileset, self.tiles, self.map = Map:chooseMap(self.mapName, self.worldTileWidth, self.worldTileHeight, self.worldWidth, self.worldHeight)
 
 	self.player = {
 		x = self.windowWidth * 0.5 - self.characterTileWidth * 0.5, y = self.windowHeight * 0.5 - self.characterTileHeight * 0.5,
@@ -139,13 +139,10 @@ client.update = function(self, dt)
 	Net:update(dt)
 
 	-- Update the map
-	-- TODO: How can we be sure that the map is always updated?
-	if self.doNtimes < 5 then
-		--print("mapname before choosemap,", self.mapName)
+	if self.mapReceived and self.mapNotOK then
 		self.tileset, self.tiles, self.map = Map:chooseMap(self.mapName, self.worldTileWidth, self.worldTileHeight, self.worldWidth, self.worldHeight)
-		self.doNtimes = self.doNtimes + 1
+		self.mapNotOK = false
 	end
-
 end
 
 client.draw = function(self)
