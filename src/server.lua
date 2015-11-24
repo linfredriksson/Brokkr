@@ -51,7 +51,7 @@ server.fixedUpdate = function(self, dt)
 
 	for id, data in pairs(Net:connectedUsers()) do
 		if data.greeted ~= true then
-			Net:send({}, "print", "Welcome to Brokkr", id)
+			Net:send({}, "print", "Welcome to Brokkr! Now the server is up.", id)
 			local mapTable, mapName = {}, "full"
 			mapTable["map"] = mapName
 			Net:send(mapTable, "getMapName", "", id)
@@ -102,6 +102,10 @@ server.draw = function(self)
 end
 
 server.quit = function(self)
+	for id, data in pairs(Net:connectedUsers()) do
+		Net:send({}, "print", "The server has been closed.", id)
+	end
+	Net:disconnect()
 end
 
 return server
