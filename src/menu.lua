@@ -36,4 +36,7 @@ menu.draw = function(self)
 	love.graphics.print("CLIENT", 10, love.graphics.getHeight() * 0.5 + 5)
 end
 
+menu.quit = function(self)
+end
+
 return menu

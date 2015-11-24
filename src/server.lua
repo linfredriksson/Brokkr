@@ -101,4 +101,7 @@ server.draw = function(self)
 	end
 end
 
+server.quit = function(self)
+end
+
 return server
