@@ -27,8 +27,8 @@ server.mousepressed = function(self, x, y, button)
 end
 
 server.keyRecieved = function(self, id, key, value)
-	if Net.users[id] and (key == "up" or key == "down" or key == "right" or key == "left" or key == "bomb") then
-		Net.users[id].key[key] = value
+	if Net.users[id].actions[key] ~= nil then
+		Net.users[id].actions[key] = value
 	end
 end
 
@@ -61,23 +61,23 @@ server.fixedUpdate = function(self, dt)
 			Net.users[id].speed = 100
 			Net.users[id].direction = 1
 			Net.users[id].isMoving = 0
-			Net.users[id].key = {}
+			Net.users[id].actions = {up = false, down = false, left = false, right = false, bomb = false}
 		end
 
 		-- place bomb key
-		if Net.users[id].key["bomb"] then
+		if Net.users[id].actions.bomb then
 			print("do bomb stuff")
-			Net.users[id].key["bomb"] = false
+			Net.users[id].actions.bomb = false
 		end
 
 		local change = dt * Net.users[id].speed
-		if Net.users[id].key["up"] then Net.users[id].direction = 2; Net.users[id].y = Net.users[id].y - change end
-		if Net.users[id].key["down"] then Net.users[id].direction = 1; Net.users[id].y = Net.users[id].y + change end
-		if Net.users[id].key["left"] then Net.users[id].direction = 4; Net.users[id].x = Net.users[id].x - change end
-		if Net.users[id].key["right"] then Net.users[id].direction = 3; Net.users[id].x = Net.users[id].x + change end
+		if Net.users[id].actions.up then Net.users[id].direction = 2; Net.users[id].y = Net.users[id].y - change end
+		if Net.users[id].actions.down then Net.users[id].direction = 1; Net.users[id].y = Net.users[id].y + change end
+		if Net.users[id].actions.left then Net.users[id].direction = 4; Net.users[id].x = Net.users[id].x - change end
+		if Net.users[id].actions.right then Net.users[id].direction = 3; Net.users[id].x = Net.users[id].x + change end
 
 		Net.users[id].isMoving = 0
-		if Net.users[id].key["up"] or Net.users[id].key["down"] or Net.users[id].key["right"] or Net.users[id].key["left"] then
+		if Net.users[id].actions.up or Net.users[id].actions.down or Net.users[id].actions.left or Net.users[id].actions.right then
 			Net.users[id].isMoving = 1
 		end
 
