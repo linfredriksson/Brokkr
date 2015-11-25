@@ -107,11 +107,15 @@ client.keypressed = function(self, key)
 		love.event.quit()
 	end
 
-	if self.keys[key] ~= nil then Net:send({}, "key_pressed", self.keys[key], Net.client.ip) end
+	if self.keys[key] ~= nil then
+		Net:send({}, "key_pressed", self.keys[key], Net.client.ip)
+	end
 end
 
 client.keyreleased = function(self, key)
-	if self.keys[key] ~= nil then Net:send({}, "key_released", self.keys[key], Net.client.ip) end
+	if self.keys[key] ~= nil then
+		Net:send({}, "key_released", self.keys[key], Net.client.ip)
+	end
 end
 
 client.update = function(self, dt)
@@ -148,8 +152,7 @@ end
 client.draw = function(self)
 	-- draw map
 	for y = 1, #self.map  do
-		local row = self.map[y]
-		for x = 1, #row do
+		for x = 1, #self.map[y] do
 			love.graphics.draw(self.tileset, self.tiles[self.map[y][x] + 1].img, x * self.worldTileWidth - self.worldTileWidth, y * self.worldTileHeight - self.worldTileHeight)
 		end
 	end
