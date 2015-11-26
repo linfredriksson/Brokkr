@@ -1,9 +1,9 @@
 local map = {}
 
-function map:chooseMap(mapName, worldTileWidth, worldTileHeight, width, height)
+function map:chooseMap(mapName, world)
 	local m = nil
-	if mapName == "empty" then m = map:emptyMap(width, height)
-	elseif mapName == "full" then m = map:fullMap(width, height)
+	if mapName == "empty" then m = map:emptyMap(world.width, world.height)
+	elseif mapName == "full" then m = map:fullMap(world.width, world.height)
 	else error("There is no such a map called \""..mapName.."\"!")
 	end
 
@@ -12,10 +12,10 @@ function map:chooseMap(mapName, worldTileWidth, worldTileHeight, width, height)
 	local tilesetHeight = tileset:getHeight();
 
 	tiles = {
-		{walkable = true, destructable = false, img = love.graphics.newQuad(0, 0, worldTileWidth, worldTileHeight, tilesetWidth, tilesetHeight)},
-		{walkable = true, destructable = false, img = love.graphics.newQuad(worldTileWidth, 0, worldTileWidth, worldTileHeight, tilesetWidth, tilesetHeight)},
-		{walkable = true, destructable = false, img = love.graphics.newQuad(0, worldTileHeight, worldTileWidth, worldTileHeight, tilesetWidth, tilesetHeight)},
-		{walkable = true, destructable = false, img = love.graphics.newQuad(worldTileWidth, worldTileHeight, worldTileWidth, worldTileHeight, tilesetWidth, tilesetHeight)}
+		{walkable = true, destructable = false, img = love.graphics.newQuad(0, 0, world.tileWidth, world.tileHeight, tilesetWidth, tilesetHeight)},
+		{walkable = true, destructable = false, img = love.graphics.newQuad(world.tileWidth, 0, world.tileWidth, world.tileHeight, tilesetWidth, tilesetHeight)},
+		{walkable = true, destructable = false, img = love.graphics.newQuad(0, world.tileHeight, world.tileWidth, world.tileHeight, tilesetWidth, tilesetHeight)},
+		{walkable = true, destructable = false, img = love.graphics.newQuad(world.tileWidth, world.tileHeight, world.tileWidth, world.tileHeight, tilesetWidth, tilesetHeight)}
 	}
 
 	return tileset, tiles, m

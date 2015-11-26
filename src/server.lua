@@ -2,20 +2,12 @@ local Net = require "dependencies/Net"
 local server = {}
 
 server.load = function(self)
-	self.windowWidth = love.graphics.getWidth()
-	self.windowHeight = love.graphics.getHeight()
-	self.worldTileWidth = 64
-	self.worldTileHeight = 64
-	self.worldWidth = 24
-	self.worldHeight = 16
-	self.characterTileWidth = 32
-	self.characterTileHeight = 32
-	self.ip, self.port = nil, 6789
-	self.maxPing = 3000
-	self.totalDeltaTime = 0
-	self.updateTimeStep = 0.01
-	self.mapTable = {}
-	self.mapTable["map"] = "full"
+	self.window = {width = love.graphics.getWidth(), height = love.graphics.getHeight()}
+	self.characterTile = {grid = nil, width = 32, height = 32}
+	self.world = {tileWidth = 32, tileHeight = 32, width = 24, height= 16}
+	self.ip, self.port, self.maxPing = nil, 6789, 3000
+	self.totalDeltaTime, self.updateTimeStep = 0, 0.01
+	self.mapTable = {map = "full"} 
 
 	Net:init("Server")
 	Net:connect(self.ip, self.port)
@@ -23,6 +15,8 @@ server.load = function(self)
 
 	Net:registerCMD("key_pressed", function(table, param, id) self:keyRecieved(id, param, true) end)
 	Net:registerCMD("key_released", function(table, param, id) self:keyRecieved(id, param, false) end)
+
+	--self.tileset, self.tiles, self.map.values = Map:chooseMap(self.map.name, self.world)
 end
 
 server.mousepressed = function(self, x, y, button)
@@ -58,8 +52,8 @@ server.fixedUpdate = function(self, dt)
 			Net:send({}, "print", "Welcome to Brokkr! Now the server is up.", id)
 			Net:send(self.mapTable, "getMapName", "", id)
 			data.greeted = true
-			Net.users[id].x = self.windowWidth * 0.5 - self.characterTileWidth * 0.5
-			Net.users[id].y = self.windowHeight * 0.5 - self.characterTileHeight * 0.5
+			Net.users[id].x = self.window.width * 0.5 - self.characterTile.width * 0.5
+			Net.users[id].y = self.window.height * 0.5 - self.characterTile.height * 0.5
 			Net.users[id].speed = 100
 			Net.users[id].direction = 1
 			Net.users[id].isMoving = 0
@@ -72,8 +66,8 @@ server.fixedUpdate = function(self, dt)
 
 			-- take location from the bottom middle of the character sprite
 			local location = {
-				mapX = math.floor((Net.users[id].x + self.characterTileWidth * 0.5) / self.windowWidth * self.worldWidth),
-				mapY = math.floor((Net.users[id].y + self.characterTileHeight) / self.windowHeight * self.worldHeight)
+				mapX = math.floor((Net.users[id].x + self.characterTile.width * 0.5) / self.window.width * self.world.width),
+				mapY = math.floor((Net.users[id].y + self.characterTile.height) / self.window.height * self.world.height)
 			}
 
 			for id, data in pairs(Net:connectedUsers()) do
@@ -106,7 +100,7 @@ server.draw = function(self)
 	local textY = 30
 	-- draw dots for all players
 	for k, v in pairs(Net.users) do
-		love.graphics.circle("fill", v.x, v.y, self.characterTileWidth * 0.5)
+		love.graphics.circle("fill", v.x, v.y, self.characterTile.width * 0.5)
 		love.graphics.print(k .. ", " .. v.x .. ":" .. v.y, 10, textY)
 		textY = textY + 20
 	end
