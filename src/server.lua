@@ -6,6 +6,8 @@ server.load = function(self)
 	self.windowHeight = love.graphics.getHeight()
 	self.worldTileWidth = 64
 	self.worldTileHeight = 64
+	self.worldWidth = 24
+	self.worldHeight = 16
 	self.characterTileWidth = 32
 	self.characterTileHeight = 32
 	self.ip, self.port = nil, 6789
@@ -66,8 +68,17 @@ server.fixedUpdate = function(self, dt)
 
 		-- place bomb key
 		if Net.users[id].actions.bomb then
-			print("do bomb stuff")
 			Net.users[id].actions.bomb = false
+
+			-- take location from the bottom middle of the character sprite
+			local location = {
+				mapX = math.floor((Net.users[id].x + self.characterTileWidth * 0.5) / self.windowWidth * self.worldWidth),
+				mapY = math.floor((Net.users[id].y + self.characterTileHeight) / self.windowHeight * self.worldHeight)
+			}
+
+			for id, data in pairs(Net:connectedUsers()) do
+				Net:send(location, "addBomb", "", id)
+			end
 		end
 
 		local change = dt * Net.users[id].speed
