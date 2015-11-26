@@ -6,20 +6,12 @@ local client = {}
 math.randomseed(os.time())
 
 client.load = function(self)
-	self.windowWidth = love.graphics.getWidth()
-	self.windowHeight = love.graphics.getHeight()
+	self.window = {width = love.graphics.getWidth(), height = love.graphics.getHeight()}
 	self.players = {}
-	self.characterTileGrid = nil
-	self.worldTileWidth = 32
-	self.worldTileHeight = 32
-	self.worldWidth = 24
-	self.worldHeight = 16
-	self.characterTileWidth = 32
-	self.characterTileHeight = 32
-	self.ip, self.port = "127.0.0.1", 6789
-	self.maxPing = 1000
-	self.mapName = "empty" -- Nil is not an option, needs a default value
-	self.mapNotOK = true -- For updating the map
+	self.characterTile = {grid = nil, width = 32, height = 32}
+	self.world = {tileWidth = 32, tileHeight = 32, width = 24, height= 16}
+	self.ip, self.port, self.maxPing = "127.0.0.1", 6789, 1000
+	self.map = {name = "empty"} -- empety is the default value
 
 	-- Define keys for different actions
 	self.actions = {up = "up", down = "down", left = "left", right = "right", bomb = " "}
@@ -34,8 +26,8 @@ client.load = function(self)
 
 	Net:registerCMD("getMapName",
 		function(table, param, dt, id)
-			self.mapName = table["map"]
-			self.mapReceived = true
+			self.map.name = table["map"]
+			self.map.received = true
 		end)
 
 	Net:registerCMD("showLocation",
@@ -68,16 +60,16 @@ client.load = function(self)
 	self.sound = love.audio.newSource("sound/footstep01.ogg")
 
 	-- Set the default map
-	self.tileset, self.tiles, self.map = Map:chooseMap(self.mapName, self.worldTileWidth, self.worldTileHeight, self.worldWidth, self.worldHeight)
+	self.tileset, self.tiles, self.map.values = Map:chooseMap(self.map.name, self.world)
 
 	self.player = {
-		x = self.windowWidth * 0.5 - self.characterTileWidth * 0.5, y = self.windowHeight * 0.5 - self.characterTileHeight * 0.5,
+		x = self.window.width * 0.5 - self.characterTile.width * 0.5, y = self.window.height * 0.5 - self.characterTile.height * 0.5,
 		direction = 1, speed = 100,
 		spritesheet = love.graphics.newImage("image/characters1.png"),
 		animation = {}
 	}
 
-	self.characterTileGrid = anim8.newGrid(self.characterTileWidth, self.characterTileHeight, self.player.spritesheet:getWidth(), self.player.spritesheet:getHeight())
+	self.characterTile.grid = anim8.newGrid(self.characterTile.width, self.characterTile.height, self.player.spritesheet:getWidth(), self.player.spritesheet:getHeight())
 	self.player.animation = self:generateCharacterAnimation(1, 0.6)
 end
 
@@ -91,10 +83,10 @@ client.generateCharacterAnimation = function(self, id, duration)
 	local col = (id - 1) % 4
 	col = 1 + col * 3 .. "-" .. 3 + col * 3
 	return {
-		anim8.newAnimation(self.characterTileGrid(col, row + 1), frameDuration),
-		anim8.newAnimation(self.characterTileGrid(col, row + 4), frameDuration),
-		anim8.newAnimation(self.characterTileGrid(col, row + 3), frameDuration),
-		anim8.newAnimation(self.characterTileGrid(col, row + 2), frameDuration)
+		anim8.newAnimation(self.characterTile.grid(col, row + 1), frameDuration),
+		anim8.newAnimation(self.characterTile.grid(col, row + 4), frameDuration),
+		anim8.newAnimation(self.characterTile.grid(col, row + 3), frameDuration),
+		anim8.newAnimation(self.characterTile.grid(col, row + 2), frameDuration)
 	}
 end
 
@@ -143,17 +135,17 @@ client.update = function(self, dt)
 	Net:update(dt)
 
 	-- Update the map
-	if self.mapReceived and self.mapNotOK then
-		self.tileset, self.tiles, self.map = Map:chooseMap(self.mapName, self.worldTileWidth, self.worldTileHeight, self.worldWidth, self.worldHeight)
-		self.mapNotOK = false
+	if self.map.received then
+		self.tileset, self.tiles, self.map.values = Map:chooseMap(self.map.name, self.world)
+		self.map.received = false -- Server sends the message once anyway
 	end
 end
 
 client.draw = function(self)
 	-- draw map
-	for y = 1, #self.map  do
-		for x = 1, #self.map[y] do
-			love.graphics.draw(self.tileset, self.tiles[self.map[y][x] + 1].img, x * self.worldTileWidth - self.worldTileWidth, y * self.worldTileHeight - self.worldTileHeight)
+	for y = 1, #self.map.values  do
+		for x = 1, #self.map.values[y] do
+			love.graphics.draw(self.tileset, self.tiles[self.map.values[y][x] + 1].img, x * self.world.tileWidth - self.world.tileWidth, y * self.world.tileHeight - self.world.tileHeight)
 		end
 	end
 

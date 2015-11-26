@@ -2,18 +2,13 @@ local Net = require "dependencies/Net"
 local server = {}
 
 server.load = function(self)
-	self.windowWidth = love.graphics.getWidth()
-	self.windowHeight = love.graphics.getHeight()
-	self.worldTileWidth = 64
-	self.worldTileHeight = 64
-	self.characterTileWidth = 32
-	self.characterTileHeight = 32
-	self.ip, self.port = nil, 6789
-	self.maxPing = 3000
-	self.totalDeltaTime = 0
-	self.updateTimeStep = 0.01
-	self.mapTable = {}
-	self.mapTable["map"] = "full"
+	self.window = {width = love.graphics.getWidth(), height = love.graphics.getHeight()}
+	self.players = {}
+	self.characterTile = {grid = nil, width = 32, height = 32}
+	self.world = {tileWidth = 32, tileHeight = 32, width = 24, height= 16}
+	self.ip, self.port, self.maxPing = nil, 6789, 3000
+	self.totalDeltaTime, self.updateTimeStep = 0, 0.01
+	self.mapTable = {map = "full"} 
 
 	Net:init("Server")
 	Net:connect(self.ip, self.port)
@@ -56,8 +51,8 @@ server.fixedUpdate = function(self, dt)
 			Net:send({}, "print", "Welcome to Brokkr! Now the server is up.", id)
 			Net:send(self.mapTable, "getMapName", "", id)
 			data.greeted = true
-			Net.users[id].x = self.windowWidth * 0.5 - self.characterTileWidth * 0.5
-			Net.users[id].y = self.windowHeight * 0.5 - self.characterTileHeight * 0.5
+			Net.users[id].x = self.window.width * 0.5 - self.characterTile.width * 0.5
+			Net.users[id].y = self.window.height * 0.5 - self.characterTile.height * 0.5
 			Net.users[id].speed = 100
 			Net.users[id].direction = 1
 			Net.users[id].isMoving = 0
@@ -95,7 +90,7 @@ server.draw = function(self)
 	local textY = 30
 	-- draw dots for all players
 	for k, v in pairs(Net.users) do
-		love.graphics.circle("fill", v.x, v.y, self.characterTileWidth * 0.5)
+		love.graphics.circle("fill", v.x, v.y, self.characterTile.width * 0.5)
 		love.graphics.print(k .. ", " .. v.x .. ":" .. v.y, 10, textY)
 		textY = textY + 20
 	end
