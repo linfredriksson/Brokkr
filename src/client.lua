@@ -60,7 +60,7 @@ client.load = function(self)
 	self.sound = love.audio.newSource("sound/footstep01.ogg")
 
 	-- Set the default map
-	self.tileset, self.tiles, self.map.values = Map:chooseMap(self.map.name, self.world)
+	self.map.tileset, self.map.tiles, self.map.values = Map:chooseMap(self.map.name, self.world)
 
 	self.player = {
 		x = self.window.width * 0.5 - self.characterTile.width * 0.5, y = self.window.height * 0.5 - self.characterTile.height * 0.5,
@@ -136,7 +136,7 @@ client.update = function(self, dt)
 
 	-- Update the map
 	if self.map.received then
-		self.tileset, self.tiles, self.map.values = Map:chooseMap(self.map.name, self.world)
+		self.map.tileset, self.map.tiles, self.map.values = Map:chooseMap(self.map.name, self.world)
 		self.map.received = false -- Server sends the message once anyway
 	end
 end
@@ -145,7 +145,7 @@ client.draw = function(self)
 	-- draw map
 	for y = 1, #self.map.values  do
 		for x = 1, #self.map.values[y] do
-			love.graphics.draw(self.tileset, self.tiles[self.map.values[y][x] + 1].img, x * self.world.tileWidth - self.world.tileWidth, y * self.world.tileHeight - self.world.tileHeight)
+			love.graphics.draw(self.map.tileset, self.map.tiles[self.map.values[y][x] + 1].img, x * self.world.tileWidth - self.world.tileWidth, y * self.world.tileHeight - self.world.tileHeight)
 		end
 	end
 

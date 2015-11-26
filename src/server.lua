@@ -3,7 +3,6 @@ local server = {}
 
 server.load = function(self)
 	self.window = {width = love.graphics.getWidth(), height = love.graphics.getHeight()}
-	self.players = {}
 	self.characterTile = {grid = nil, width = 32, height = 32}
 	self.world = {tileWidth = 32, tileHeight = 32, width = 24, height= 16}
 	self.ip, self.port, self.maxPing = nil, 6789, 3000
@@ -16,6 +15,8 @@ server.load = function(self)
 
 	Net:registerCMD("key_pressed", function(table, param, id) self:keyRecieved(id, param, true) end)
 	Net:registerCMD("key_released", function(table, param, id) self:keyRecieved(id, param, false) end)
+
+	--self.tileset, self.tiles, self.map.values = Map:chooseMap(self.map.name, self.world)
 end
 
 server.mousepressed = function(self, x, y, button)
