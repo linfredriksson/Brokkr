@@ -18,7 +18,7 @@ function map:chooseMap(mapName, world)
 		{walkable = true, destructable = false, img = love.graphics.newQuad(world.tileWidth, world.tileHeight, world.tileWidth, world.tileHeight, tilesetWidth, tilesetHeight)}
 	}
 
-	return tileset, tiles, m
+	return {tileset = tileset, tiles = tiles, values = m}
 end
 
 --[[ Returns a empty map with only walls around the border. ]]
