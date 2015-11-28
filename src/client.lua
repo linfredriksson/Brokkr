@@ -9,6 +9,7 @@ client.load = function(self)
 	self.window = {width = love.graphics.getWidth(), height = love.graphics.getHeight()}
 	self.players = {}
 	self.explosions = {}
+	self.bombs = {}
 	self.characterTile = {grid = nil, width = 32, height = 32}
 	self.world = {tileWidth = 32, tileHeight = 32, width = 24, height= 16}
 	self.ip, self.port, self.maxPing = "127.0.0.1", 6789, 1000
@@ -80,6 +81,15 @@ client.load = function(self)
 
 	self.characterTile.grid = anim8.newGrid(self.characterTile.width, self.characterTile.height, self.player.spritesheet:getWidth(), self.player.spritesheet:getHeight())
 	self.player.animation = self:generateCharacterAnimation(1, 0.6)
+
+	self.bombType = {
+		{	image = love.graphics.newImage("image/bomb1.png"),
+			countDown = 1,
+			spreadDistance = 2,
+			spreadRate = 1.8,
+			directions = {1, 2, 3, 4}
+		}
+	}
 
 	self.explosionType = {
 		self:addExplosionType(love.graphics.newImage("image/explosion_34FR.png"), 34, 2),
@@ -159,11 +169,15 @@ client.keypressed = function(self, key)
 		love.event.quit()
 	end
 
-	--[[if self.actions.bomb == key then
-		local mapX = math.floor((self.player.x + 16) / self.windowWidth * self.worldWidth)
-		local mapY = math.floor((self.player.y + 32) / self.windowHeight * self.worldHeight)
-		self.explosions[#self.explosions + 1] = self:createExplosion(self.explosionType[math.random(#self.explosionType)], {1, 2, 3, 4}, mapX, mapY, 2, 1.8)
-	end]]
+	if self.actions.bomb == key then
+		local mapX = math.floor((self.player.x + self.characterTile.width * 0.5) / self.window.width * self.world.width)
+		local mapY = math.floor((self.player.y + self.characterTile.height) / self.window.height * self.world.height)
+		self.bombs[#self.bombs + 1] = {
+			bombType = self.bombType[1],
+			countDown = self.bombType[1].countDown,
+			x = mapX, y = mapY
+		}
+	end
 
 	if self.keys[key] ~= nil then
 		Net:send({}, "key_pressed", self.keys[key], Net.client.ip)
@@ -173,6 +187,25 @@ end
 client.keyreleased = function(self, key)
 	if self.keys[key] ~= nil then
 		Net:send({}, "key_released", self.keys[key], Net.client.ip)
+	end
+end
+
+client.updateBombs = function(self, dt)
+	local bombs = self.bombs
+	self.bombs = {}
+	for i = 1, #bombs do
+		local bomb = bombs[i]
+		bomb.countDown = bomb.countDown - dt
+
+		if bomb.countDown < 0.0 then
+			self.explosions[#self.explosions + 1] = self:createExplosion(
+				self.explosionType[math.random(#self.explosionType)],
+				bomb.bombType.directions, bomb.x, bomb.y,
+				bomb.bombType.spreadDistance,
+				bomb.bombType.spreadRate)
+		else
+			self.bombs[#self.bombs + 1] = bomb
+		end
 	end
 end
 
@@ -215,6 +248,7 @@ client.updateExplosions = function(self, dt)
 end
 
 client.update = function(self, dt)
+	self:updateBombs(dt)
 	self:updateExplosions(dt)
 
 	for k, v in pairs(self.players) do
@@ -253,6 +287,15 @@ client.draw = function(self)
 		for x = 1, #self.map.values[y] do
 			love.graphics.draw(self.map.tileset, self.map.tiles[self.map.values[y][x] + 1].img, x * self.world.tileWidth - self.world.tileWidth, y * self.world.tileHeight - self.world.tileHeight)
 		end
+	end
+
+	-- draw bombs
+	for id = 1, #self.bombs do
+		love.graphics.draw(
+			self.bombType[1].image,
+			self.bombs[id].x * self.world.tileWidth,
+			self.bombs[id].y * self.world.tileHeight
+		)
 	end
 
 	-- draw all players
