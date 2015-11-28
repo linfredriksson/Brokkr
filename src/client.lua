@@ -11,6 +11,7 @@ client.load = function(self)
 	self.explosions = {}
 	self.bombs = {}
 	self.characterTile = {grid = nil, width = 32, height = 32}
+	self.charactersInTilesheet = 7
 	self.world = {tileWidth = 32, tileHeight = 32, width = 24, height= 16}
 	self.ip, self.port, self.maxPing = "127.0.0.1", 6789, 1000
 	self.map = {name = "empty"} -- empety is the default value
@@ -143,8 +144,11 @@ client.createExplosion = function(self, newExplosion, newDirections, newX, newY,
 	}
 end
 
+--[[
+	Return a character animation containing a random characters.
+]]
 client.generateRandomCharacterAnimation = function(self, duration)
-	return self:generateCharacterAnimation(math.random(7), duration)
+	return self:generateCharacterAnimation(math.random(self.charactersInTilesheet), duration)
 end
 
 client.generateCharacterAnimation = function(self, id, duration)
@@ -189,6 +193,11 @@ client.keyreleased = function(self, key)
 		Net:send({}, "key_released", self.keys[key], Net.client.ip)
 	end
 end
+--[[
+	Updates all bombs placed on the map, counts them down untill they explode
+	and generates explosions around them.
+	- dt: delta time since last update.
+]]
 
 client.updateBombs = function(self, dt)
 	local bombs = self.bombs
@@ -208,6 +217,11 @@ client.updateBombs = function(self, dt)
 		end
 	end
 end
+
+--[[
+	Updates all explosions currently on the map and spread new ones if needed.
+	- dt: delta time since last update.
+]]
 
 client.updateExplosions = function(self, dt)
 	local tmpExplosions = self.explosions
