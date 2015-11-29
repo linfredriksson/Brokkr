@@ -62,10 +62,15 @@ client.load = function(self)
 
 	Net:registerCMD("addBomb",
 		function(table, param, dt, id)
-			self.explosions[#self.explosions + 1] = self:createExplosion(
+			--[[self.explosions[#self.explosions + 1] = self:createExplosion(
 				self.explosionType[math.random(#self.explosionType)],
 				{1, 2, 3, 4}, table["mapX"], table["mapY"], 2, 1.8
-			)
+			)]]
+			self.bombs[#self.bombs + 1] = {
+				bombType = self.bombType[1],
+				countDown = self.bombType[1].countDown,
+				x = table.mapX, y = table.mapY
+			}
 		end)
 
 	self.sound = love.audio.newSource("sound/footstep01.ogg")
@@ -173,7 +178,7 @@ client.keypressed = function(self, key)
 		love.event.quit()
 	end
 
-	if self.actions.bomb == key then
+--[[if self.actions.bomb == key then
 		local mapX = math.floor((self.player.x + self.characterTile.width * 0.5) / self.window.width * self.world.width)
 		local mapY = math.floor((self.player.y + self.characterTile.height) / self.window.height * self.world.height)
 		self.bombs[#self.bombs + 1] = {
@@ -181,7 +186,7 @@ client.keypressed = function(self, key)
 			countDown = self.bombType[1].countDown,
 			x = mapX, y = mapY
 		}
-	end
+	end]]
 
 	if self.keys[key] ~= nil then
 		Net:send({}, "key_pressed", self.keys[key], Net.client.ip)
