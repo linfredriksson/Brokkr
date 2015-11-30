@@ -14,7 +14,7 @@ client.load = function(self)
 	self.charactersInTilesheet = 7
 	self.world = {tileWidth = 32, tileHeight = 32, width = 24, height= 16}
 	self.ip, self.port, self.maxPing = "127.0.0.1", 6789, 1000
-	self.map = {name = "random"} -- empety is the default value
+	self.map = {name = "empty"} -- empty is the default value
 
 	-- Define keys for different actions
 	self.actions = {up = "up", down = "down", left = "left", right = "right", bomb = " "}
@@ -30,7 +30,9 @@ client.load = function(self)
 	Net:registerCMD("getMapName",
 		function(table, param, dt, id)
 			self.map.name = table["map"]
-			self.map.received = true
+			for k, v in pairs(Map:chooseMap(self.map.name, self.world)) do
+				self.map[k] = v
+			end
 		end)
 
 	Net:registerCMD("showLocation",
@@ -313,20 +315,14 @@ client.update = function(self, dt)
 
 	Net:update(dt)
 
-	-- Update the map
-	if self.map.received then
-		for k, v in pairs(Map:chooseMap(self.map.name, self.world)) do
-			self.map[k] = v
-		end
-		self.map.received = false -- Server sends the message once anyway
-	end
 end
 
 client.draw = function(self)
 	-- draw map
 	for y = 1, #self.map.values  do
 		for x = 1, #self.map.values[y] do
-			love.graphics.draw(self.map.tileset, self.map.tiles[self.map.values[y][x] + 1].img, x * self.world.tileWidth - self.world.tileWidth, y * self.world.tileHeight - self.world.tileHeight)
+			--love.graphics.draw(self.map.tileset, self.map.tiles[self.map.values[y][x]].img, x * self.world.tileWidth - self.world.tileWidth, y * self.world.tileHeight - self.world.tileHeight)
+			love.graphics.draw(self.map.tileset, self.map.tiles[self.map.values[y][x]].img, (x - 1) * self.world.tileWidth, (y - 1) * self.world.tileHeight)
 		end
 	end
 
