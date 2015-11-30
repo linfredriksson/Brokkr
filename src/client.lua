@@ -14,7 +14,7 @@ client.load = function(self)
 	self.charactersInTilesheet = 7
 	self.world = {tileWidth = 32, tileHeight = 32, width = 24, height= 16}
 	self.ip, self.port, self.maxPing = "127.0.0.1", 6789, 1000
-	self.map = {name = "empty"} -- empety is the default value
+	self.map = {name = "random"} -- empety is the default value
 
 	-- Define keys for different actions
 	self.actions = {up = "up", down = "down", left = "left", right = "right", bomb = " "}
@@ -200,6 +200,7 @@ client.keyreleased = function(self, key)
 		Net:send({}, "key_released", self.keys[key], Net.client.ip)
 	end
 end
+
 --[[
 	Updates all bombs placed on the map, counts them down untill they explode
 	and generates explosions around them.
@@ -218,7 +219,8 @@ client.updateBombs = function(self, dt)
 				self.explosionType[math.random(#self.explosionType)],
 				bomb.bombType.directions, bomb.x, bomb.y,
 				bomb.bombType.spreadDistance,
-				bomb.bombType.spreadRate)
+				bomb.bombType.spreadRate
+			)
 		else
 			self.bombs[#self.bombs + 1] = bomb
 		end
@@ -229,9 +231,10 @@ end
 	Updates all explosions currently on the map and spread new ones if needed.
 	- dt: delta time since last update.
 ]]
-
 client.updateExplosions = function(self, dt)
 	local tmpExplosions = self.explosions
+	local offsetX = {0, 1, 0, -1}
+	local offsetY = {-1, 0, 1, 0}
 	self.explosions = {}
 
 	for id = 1, #tmpExplosions do
@@ -239,29 +242,44 @@ client.updateExplosions = function(self, dt)
 		explosion.timer = explosion.timer - dt
 		explosion.animation:update(dt)
 
-		local offsetX = {0, 1, 0, -1}
-		local offsetY = {-1, 0, 1, 0}
+		-- when timer is low enough spread explosion once
 		if explosion.spread > 0 and explosion.timer < explosion.spreadRate then
+			local tileID1 = self.map.values[explosion.y + 0][explosion.x + 1] + 1
+			local tileID2 = self.map.values[explosion.y + 2][explosion.x + 1] + 1
+
+			-- spread explosion in some directions
 			for i = 1, #explosion.directions do
 				local dir = explosion.directions[i]
 				local pos = {x = explosion.x + offsetX[dir], y = explosion.y + offsetY[dir]}
 				local directions = {}
 
+				-- find which directions the explosion will continue to spread in in the following itteration
 				for j = 1, #explosion.directions do
 					local dir2 = explosion.directions[j]
-					if (dir == 1 and dir2 == 1) or (dir == 2 and dir2 ~= 4) or (dir == 3 and dir2 == 3) or (dir == 4 and dir2 ~= 2) then
-						directions[#directions + 1] = dir2
+					if (dir == 2 and dir2 ~= 4) or (dir == 4 and dir2 ~= 2) or (dir == dir2) then
+						-- dont spread explosions around corners
+						if(dir2 == 2) or (dir2 == 4) or
+							(dir2 == 1 and self.map.tiles[tileID1].walkable) or
+							(dir2 == 3 and self.map.tiles[tileID2].walkable)
+						then
+							directions[#directions + 1] = dir2
+						end
 					end
 				end
 
-				self.explosions[#self.explosions + 1] = self:createExplosion(
-					self.explosionType[math.random(#self.explosionType)],
-					directions, pos.x, pos.y, explosion.spread - 1, explosion.spreadRate
-				)
+				-- dont spawn explosions on walls
+				local index = self.map.values[pos.y + 1][pos.x + 1] + 1
+				if self.map.tiles[index].walkable then
+					self.explosions[#self.explosions + 1] = self:createExplosion(
+						self.explosionType[math.random(#self.explosionType)],
+						directions, pos.x, pos.y, explosion.spread - 1, explosion.spreadRate
+					)
+				end
 			end
 			explosion.spread = 0
 		end
 
+		-- keep explosion if animation timer have not run out
 		if explosion.timer > 0 then
 			self.explosions[#self.explosions + 1] = explosion
 		end
