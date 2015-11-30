@@ -4,6 +4,7 @@ function map:chooseMap(mapName, world)
 	local m = nil
 	if mapName == "empty" then m = map:emptyMap(world.width, world.height)
 	elseif mapName == "full" then m = map:fullMap(world.width, world.height)
+	elseif mapName == "random" then m = map:randomMap(world.width, world.height)
 	else error("There is no such a map called \""..mapName.."\"!")
 	end
 
@@ -14,8 +15,8 @@ function map:chooseMap(mapName, world)
 	tiles = {
 		{walkable = true, destructable = false, img = love.graphics.newQuad(0, 0, world.tileWidth, world.tileHeight, tilesetWidth, tilesetHeight)},
 		{walkable = true, destructable = false, img = love.graphics.newQuad(world.tileWidth, 0, world.tileWidth, world.tileHeight, tilesetWidth, tilesetHeight)},
-		{walkable = true, destructable = false, img = love.graphics.newQuad(0, world.tileHeight, world.tileWidth, world.tileHeight, tilesetWidth, tilesetHeight)},
-		{walkable = true, destructable = false, img = love.graphics.newQuad(world.tileWidth, world.tileHeight, world.tileWidth, world.tileHeight, tilesetWidth, tilesetHeight)}
+		{walkable = false, destructable = false, img = love.graphics.newQuad(0, world.tileHeight, world.tileWidth, world.tileHeight, tilesetWidth, tilesetHeight)},
+		{walkable = false, destructable = false, img = love.graphics.newQuad(world.tileWidth, world.tileHeight, world.tileWidth, world.tileHeight, tilesetWidth, tilesetHeight)}
 	}
 
 	return {tileset = tileset, tiles = tiles, values = m}
@@ -37,6 +38,25 @@ map.emptyMap = function (self, width, height)
 	for i = 1, width do
 		m[height][i] = wall
 		m[1][i] = wall
+	end
+
+	return m
+end
+
+--[[ Returns a map with walls randomly placed, as well as a border around the map. ]]
+map.randomMap = function(self, width, height)
+	local m = self:emptyMap(width, height)
+	local wall = 2
+	local floor = 0
+
+	for y = 2, height - 1 do
+		for x = 2, width - 1 do
+			if math.random() < 0.8 then
+				m[y][x] = floor
+			else
+				m[y][x] = wall
+			end
+		end
 	end
 
 	return m
