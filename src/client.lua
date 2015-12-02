@@ -329,7 +329,7 @@ client.draw = function(self)
 	-- draw bombs
 	for id = 1, #self.bombs do
 		love.graphics.draw(
-			self.bombType[1].image,
+			self.bombs[id].bombType.image,
 			self.bombs[id].x * self.world.tileWidth,
 			self.bombs[id].y * self.world.tileHeight
 		)
