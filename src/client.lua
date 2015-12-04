@@ -27,6 +27,43 @@ client.load = function(self)
 	Net:connect(self.ip, self.port)
 	Net:setMaxPing(self.maxPing)
 
+	self:registerCMD()
+
+	self.sound = love.audio.newSource("sound/footstep01.ogg")
+
+	-- Set the default map
+	for k, v in pairs(Map:chooseMap(self.map.name, self.world)) do
+		self.map[k] = v
+	end
+
+	self.player = {
+		x = self.window.width * 0.5 - self.characterTile.width * 0.5, y = self.window.height * 0.5 - self.characterTile.height * 0.5,
+		direction = 1, speed = 100,
+		spritesheet = love.graphics.newImage("image/characters1.png"),
+		animation = {}
+	}
+
+	self.characterTile.grid = anim8.newGrid(self.characterTile.width, self.characterTile.height, self.player.spritesheet:getWidth(), self.player.spritesheet:getHeight())
+	self.player.animation = self:generateCharacterAnimation(1, 0.6)
+
+	self.bombType = {
+		{	image = love.graphics.newImage("image/bomb1.png"),
+			countDown = 1,
+			spreadDistance = 2,
+			spreadRate = 1.8,
+			directions = {1, 2, 3, 4}
+		}
+	}
+
+	self.explosionType = {
+		self:addExplosionType(love.graphics.newImage("image/explosion_34FR.png"), 34, 2),
+		self:addExplosionType(love.graphics.newImage("image/explosion_47FR.png"), 47, 2),
+		self:addExplosionType(love.graphics.newImage("image/explosion_50FR.png"), 50, 2),
+		self:addExplosionType(love.graphics.newImage("image/explosion_52FR.png"), 52, 2)
+	}
+end
+
+client.registerCMD = function(self)
 	Net:registerCMD("getMapName",
 		function(table, param, dt, id)
 			self.map.name = table["map"]
@@ -64,49 +101,12 @@ client.load = function(self)
 
 	Net:registerCMD("addBomb",
 		function(table, param, dt, id)
-			--[[self.explosions[#self.explosions + 1] = self:createExplosion(
-				self.explosionType[math.random(#self.explosionType)],
-				{1, 2, 3, 4}, table["mapX"], table["mapY"], 2, 1.8
-			)]]
 			self.bombs[#self.bombs + 1] = {
 				bombType = self.bombType[1],
 				countDown = self.bombType[1].countDown,
 				x = table.mapX, y = table.mapY
 			}
 		end)
-
-	self.sound = love.audio.newSource("sound/footstep01.ogg")
-
-	-- Set the default map
-	for k, v in pairs(Map:chooseMap(self.map.name, self.world)) do
-		self.map[k] = v
-	end
-
-	self.player = {
-		x = self.window.width * 0.5 - self.characterTile.width * 0.5, y = self.window.height * 0.5 - self.characterTile.height * 0.5,
-		direction = 1, speed = 100,
-		spritesheet = love.graphics.newImage("image/characters1.png"),
-		animation = {}
-	}
-
-	self.characterTile.grid = anim8.newGrid(self.characterTile.width, self.characterTile.height, self.player.spritesheet:getWidth(), self.player.spritesheet:getHeight())
-	self.player.animation = self:generateCharacterAnimation(1, 0.6)
-
-	self.bombType = {
-		{	image = love.graphics.newImage("image/bomb1.png"),
-			countDown = 1,
-			spreadDistance = 2,
-			spreadRate = 1.8,
-			directions = {1, 2, 3, 4}
-		}
-	}
-
-	self.explosionType = {
-		self:addExplosionType(love.graphics.newImage("image/explosion_34FR.png"), 34, 2),
-		self:addExplosionType(love.graphics.newImage("image/explosion_47FR.png"), 47, 2),
-		self:addExplosionType(love.graphics.newImage("image/explosion_50FR.png"), 50, 2),
-		self:addExplosionType(love.graphics.newImage("image/explosion_52FR.png"), 52, 2)
-	}
 end
 
 --[[
@@ -322,7 +322,7 @@ client.draw = function(self)
 	for y = 1, #self.map.values  do
 		for x = 1, #self.map.values[y] do
 			--love.graphics.draw(self.map.tileset, self.map.tiles[self.map.values[y][x]].img, x * self.world.tileWidth - self.world.tileWidth, y * self.world.tileHeight - self.world.tileHeight)
-			love.graphics.draw(self.map.tileset, self.map.tiles[self.map.values[y][x]].img, (x - 1) * self.world.tileWidth, (y - 1) * self.world.tileHeight)
+			love.graphics.draw(self.map.tileset, self.map.tiles[self.map.values[y][x]+1].img, (x - 1) * self.world.tileWidth, (y - 1) * self.world.tileHeight)
 		end
 	end
 

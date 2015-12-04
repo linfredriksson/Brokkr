@@ -7,7 +7,7 @@ server.load = function(self)
 	self.world = {tileWidth = 32, tileHeight = 32, width = 24, height= 16}
 	self.ip, self.port, self.maxPing = nil, 6789, 3000
 	self.totalDeltaTime, self.updateTimeStep = 0, 0.01
-	self.mapTable = {map = "full"} 
+	self.mapTable = {map = "random"} 
 
 	Net:init("Server")
 	Net:connect(self.ip, self.port)

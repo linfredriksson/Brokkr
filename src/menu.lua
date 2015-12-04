@@ -31,9 +31,9 @@ menu.draw = function(self)
 	love.graphics.setColor(0, 0, 0, 255)
 	love.graphics.rectangle("fill", 0, love.graphics.getHeight() * 0.5, 1000, 1000)
 	love.graphics.setColor(0, 0, 0, 255)
-	love.graphics.print("SERVER", 10, love.graphics.getHeight() * 0.5 - 55)
+	love.graphics.print("HOST GAME", 10, love.graphics.getHeight() * 0.5 - 55)
 	love.graphics.setColor(255, 255, 255, 255)
-	love.graphics.print("CLIENT", 10, love.graphics.getHeight() * 0.5 + 5)
+	love.graphics.print("JOIN GAME", 10, love.graphics.getHeight() * 0.5 + 5)
 end
 
 menu.quit = function(self)
