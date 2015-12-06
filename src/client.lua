@@ -230,6 +230,16 @@ client.updateBombs = function(self, dt)
 end
 
 --[[
+	Updates all animations of explosions currently on the map.
+	- dt: delta time since last update.
+]]
+client.updateExplosionAnimations = function(self, dt)
+	for id = 1, #self.explosions do
+		self.explosions[id].animation:update(dt)
+	end
+end
+
+--[[
 	Updates all explosions currently on the map and spread new ones if needed.
 	- dt: delta time since last update.
 ]]
@@ -242,7 +252,6 @@ client.updateExplosions = function(self, dt)
 	for id = 1, #tmpExplosions do
 		local explosion = tmpExplosions[id]
 		explosion.timer = explosion.timer - dt
-		explosion.animation:update(dt)
 
 		-- when timer is low enough spread explosion once
 		if explosion.spread > 0 and explosion.timer < explosion.spreadRate then
@@ -290,6 +299,7 @@ end
 
 client.update = function(self, dt)
 	self:updateBombs(dt)
+	self:updateExplosionAnimations(dt)
 	self:updateExplosions(dt)
 
 	for k, v in pairs(self.players) do
