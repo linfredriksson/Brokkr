@@ -5,7 +5,23 @@ explosion.initiate = function(self)
 	self.type = {}
 end
 
-explosion.addType = function(self, image, numberOfTiles, animationDuration)
+explosion.addType = function(self, inImage, inNumberOfTiles, inAnimationDuration)
+	local type = {
+		animationDuration = inAnimationDuration,
+		frameDuration = inAnimationDuration / inNumberOfTiles,
+		numberOfTiles = inNumberOfTiles,
+		tileset = inImage,
+		tileWidth = math.floor(inImage:getWidth() / inNumberOfTiles),
+		tileHeight = image:getHeight(),
+		grid = nil
+	}
+	type.grid = anim8.newGrid(
+		type.tileWidth,
+		type.tileHeight,
+		inImage:getWidth(),
+		inImage:getHeight()
+	)
+	self.type[#self.type + 1] = type
 end
 
 explosion.addInstance = function(self, type, directions, posX, posY, spreadDistance, spreadRate)
