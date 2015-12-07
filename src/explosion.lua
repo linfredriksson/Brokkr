@@ -34,9 +34,26 @@ explosion.addType = function(self, inImage, inNumberOfTiles, inAnimationDuration
 end
 
 --[[
-
+	Creates a explosion instance on the map square newX, newY.
+	- inType: is the explosion type.
+	- inDirections: is used to show in wich directions the explosion will spread.
+	- inPosX: is the x coordinate in the self.map.
+	- inPosY: is the y coordinate in the selt.map.
+	- inSpreadDistance: indicates how far the explision will spread from its center.
+	- inSpreadRate: indicates how fast the explosion will spread.
 ]]
-explosion.addInstance = function(self, type, directions, posX, posY, spreadDistance, spreadRate)
+explosion.addInstance = function(self, inType, inDirections, inPosX, inPosY, inSpreadDistance, inSpreadRate)
+	local instance = {
+		type = inType,
+		timer = inType.animationDuration,
+		x = inPosX,
+		y = inPosY,
+		spreadDirections = inDirections,
+		spreadDistance = inSpreadDistance,
+		spreadRate = inSpreadRate,
+		animation = anim8.newAnimation(inType.grid("1-" .. inType.numberOfTiles, 1), inType.frameDuration)
+	}
+	self.instances[#self.instances + 1] = instance
 end
 
 --[[
