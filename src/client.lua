@@ -1,6 +1,7 @@
 local anim8 = require "dependencies/anim8"
 local Net = require "dependencies/Net"
 local Map = require "map"
+local explosion = require "explosion"
 local client = {}
 
 math.randomseed(os.time())
@@ -8,13 +9,12 @@ math.randomseed(os.time())
 client.load = function(self)
 	self.window = {width = love.graphics.getWidth(), height = love.graphics.getHeight()}
 	self.players = {}
-	self.explosions = {}
 	self.bombs = {}
 	self.characterTile = {grid = nil, width = 32, height = 32}
 	self.charactersInTilesheet = 7
 	self.world = {tileWidth = 32, tileHeight = 32, width = 24, height= 16}
 	self.ip, self.port, self.maxPing = "127.0.0.1", 6789, 1000
-	self.map = {name = "empty"} -- empty is the default value
+	self.map = {name = "random"} -- empty is the default value
 
 	-- Define keys for different actions
 	self.actions = {up = "up", down = "down", left = "left", right = "right", bomb = " "}
@@ -55,12 +55,11 @@ client.load = function(self)
 		}
 	}
 
-	self.explosionType = {
-		self:addExplosionType(love.graphics.newImage("image/explosion_34FR.png"), 34, 2),
-		self:addExplosionType(love.graphics.newImage("image/explosion_47FR.png"), 47, 2),
-		self:addExplosionType(love.graphics.newImage("image/explosion_50FR.png"), 50, 2),
-		self:addExplosionType(love.graphics.newImage("image/explosion_52FR.png"), 52, 2)
-	}
+	explosion:initiate()
+	explosion:addType(love.graphics.newImage("image/explosion_34FR.png"), 34, 2)
+	explosion:addType(love.graphics.newImage("image/explosion_47FR.png"), 47, 2)
+	explosion:addType(love.graphics.newImage("image/explosion_50FR.png"), 50, 2)
+	explosion:addType(love.graphics.newImage("image/explosion_52FR.png"), 52, 2)
 end
 
 client.registerCMD = function(self)
@@ -107,50 +106,6 @@ client.registerCMD = function(self)
 				x = table.mapX, y = table.mapY
 			}
 		end)
-end
-
---[[
-	Creates a object that can be used to render an explosion.
-	- image: is a loaded image containing the tileset of a explosion animation.
-	- numberOfTiles: is the number of tiles in the tileset image.
-	- duration: is the total animation time of the explosion.
-]]
-client.addExplosionType = function(self, image, numberOfTiles, duration)
-	local explosion = {
-		duration = duration,
-		frameDuration = duration / numberOfTiles,
-		numberOfTiles = numberOfTiles,
-		tileset = image,
-		tileWidth = math.floor(image:getWidth() / numberOfTiles),
-		tileHeight = image:getHeight(),
-		grid = nil
-	}
-	explosion.grid = anim8.newGrid(
-		explosion.tileWidth, explosion.tileHeight,
-		image:getWidth(), image:getHeight()
-	)
-	return explosion
-end
-
---[[
-	Creates a explosion instance on the map square newX, newY.
-	- newExplosion: is the explosion type.
-	- newDirections: is used to show in wich directions the explosion will spread.
-	- newX: is the x coordinate in the self.map.
-	- newY: is the y coordinate in the selt.map.
-	- newSpread: indicates how far the explision will spread from its center.
-	- newSpreadRate: indicates how fast the explosion will spread.
-]]
-client.createExplosion = function(self, newExplosion, newDirections, newX, newY, newSpread, newSpreadRate)
-	return {
-		explosion = newExplosion,
-		timer = newExplosion.duration,
-		x = newX, y = newY,
-		animation = anim8.newAnimation(newExplosion.grid("1-" .. newExplosion.numberOfTiles, 1), newExplosion.frameDuration),
-		directions = newDirections,
-		spread = newSpread,
-		spreadRate = newSpreadRate
-	}
 end
 
 --[[
@@ -217,9 +172,10 @@ client.updateBombs = function(self, dt)
 		bomb.countDown = bomb.countDown - dt
 
 		if bomb.countDown < 0.0 then
-			self.explosions[#self.explosions + 1] = self:createExplosion(
-				self.explosionType[math.random(#self.explosionType)],
-				bomb.bombType.directions, bomb.x, bomb.y,
+			explosion:addInstance(
+				bomb.bombType.directions,
+				bomb.x,
+				bomb.y,
 				bomb.bombType.spreadDistance,
 				bomb.bombType.spreadRate
 			)
@@ -229,83 +185,14 @@ client.updateBombs = function(self, dt)
 	end
 end
 
---[[
-	Updates all animations of explosions currently on the map.
-	- dt: delta time since last update.
-]]
-client.updateExplosionAnimations = function(self, dt)
-	for id = 1, #self.explosions do
-		self.explosions[id].animation:update(dt)
-	end
-end
-
---[[
-	Updates all explosions currently on the map and spread new ones if needed.
-	- dt: delta time since last update.
-]]
-client.updateExplosions = function(self, dt)
-	local tmpExplosions = self.explosions
-	local offsetX = {0, 1, 0, -1}
-	local offsetY = {-1, 0, 1, 0}
-	self.explosions = {}
-
-	for id = 1, #tmpExplosions do
-		local explosion = tmpExplosions[id]
-		explosion.timer = explosion.timer - dt
-
-		-- when timer is low enough spread explosion once
-		if explosion.spread > 0 and explosion.timer < explosion.spreadRate then
-			local tileID1 = self.map.values[explosion.y + 0][explosion.x + 1] + 1
-			local tileID2 = self.map.values[explosion.y + 2][explosion.x + 1] + 1
-
-			-- spread explosion in some directions
-			for i = 1, #explosion.directions do
-				local dir = explosion.directions[i]
-				local pos = {x = explosion.x + offsetX[dir], y = explosion.y + offsetY[dir]}
-				local directions = {}
-
-				-- find which directions the explosion will continue to spread in in the following itteration
-				for j = 1, #explosion.directions do
-					local dir2 = explosion.directions[j]
-					if (dir == 2 and dir2 ~= 4) or (dir == 4 and dir2 ~= 2) or (dir == dir2) then
-						-- dont spread explosions around corners
-						if(dir2 == 2) or (dir2 == 4) or
-							(dir2 == 1 and self.map.tiles[tileID1].walkable) or
-							(dir2 == 3 and self.map.tiles[tileID2].walkable)
-						then
-							directions[#directions + 1] = dir2
-						end
-					end
-				end
-
-				-- dont spawn explosions on walls
-				local index = self.map.values[pos.y + 1][pos.x + 1] + 1
-				if self.map.tiles[index].walkable then
-					self.explosions[#self.explosions + 1] = self:createExplosion(
-						self.explosionType[math.random(#self.explosionType)],
-						directions, pos.x, pos.y, explosion.spread - 1, explosion.spreadRate
-					)
-				end
-			end
-			explosion.spread = 0
-		end
-
-		-- keep explosion if animation timer have not run out
-		if explosion.timer > 0 then
-			self.explosions[#self.explosions + 1] = explosion
-		end
-	end
-end
-
 client.update = function(self, dt)
 	self:updateBombs(dt)
-	self:updateExplosionAnimations(dt)
-	self:updateExplosions(dt)
+	explosion:updateAnimation(dt)
+	explosion:update(self.map, dt)
 
 	for k, v in pairs(self.players) do
 		if v.isMoving == "1" then
 			v.animation[tonumber(v.direction)]:update(dt)
-			--sound:play()
 		else
 			v.animation[tonumber(v.direction)]:gotoFrame(2)
 		end
@@ -313,7 +200,6 @@ client.update = function(self, dt)
 
 	if love.keyboard.isDown(self.actions.up, self.actions.down, self.actions.right, self.actions.left) then
 		self.player.animation[self.player.direction]:update(dt)
-		--sound:play()
 	else
 		self.player.animation[self.player.direction]:gotoFrame(2)
 	end
@@ -354,12 +240,12 @@ client.draw = function(self)
 	self.player.animation[self.player.direction]:draw(self.player.spritesheet, self.player.x, self.player.y)
 
 	-- draw explosions
-	for id = 1, #self.explosions do
-		local explosion = self.explosions[id]
-		explosion.animation:draw(
-			explosion.explosion.tileset,
-			(explosion.x + 0.5) * self.world.tileWidth - explosion.explosion.tileWidth * 0.5,
-			(explosion.y + 0.5) * self.world.tileWidth - explosion.explosion.tileHeight * 0.5
+	for id = 1, #explosion.instances do
+		local e = explosion.instances[id]
+		e.animation:draw(
+			e.type.tileset,
+			(e.x + 0.5) * self.world.tileWidth - e.type.tileWidth * 0.5,
+			(e.y + 0.5) * self.world.tileHeight - e.type.tileHeight * 0.5
 		)
 	end
 end
