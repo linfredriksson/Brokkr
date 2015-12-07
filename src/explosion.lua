@@ -39,6 +39,7 @@ end
 --[[
 	Creates a explosion instance on the map square newX, newY.
 	- inDirections: is used to show in wich directions the explosion will spread.
+		1, 2, 3, 4 equals to up, right, down, left.
 	- inPosX: is the x coordinate in the self.map.
 	- inPosY: is the y coordinate in the selt.map.
 	- inSpreadDistance: indicates how far the explision will spread from its center.
@@ -117,7 +118,6 @@ explosion.spread = function(self, instance, inMap, dt)
 			x = instance.x + offsetX[dir1],
 			y = instance.y + offsetY[dir1]
 		}
-
 		walkable.current = inMap.tiles[inMap.values[pos.y + 1][pos.x + 1] + 1].walkable
 
 		if walkable.current then
@@ -125,16 +125,14 @@ explosion.spread = function(self, instance, inMap, dt)
 			for dir2ID = 1, #instance.spreadDirections do
 				local dir2 = instance.spreadDirections[dir2ID]
 
-				if (dir1 == 2 and dir2 ~= 4) or
+				if ((dir1 == 2 and dir2 ~= 4) or -- dont add dir2 if opposite to dir1
 					(dir1 == 4 and dir2 ~= 2) or
-					(dir1 == dir2)
+					(dir1 == dir2))
+					and -- only spread up or down if no wall is in the way
+					not((dir2 == 1 and not walkable.above) or
+					(dir2 == 3 and not walkable.below))
 				then
-					if (dir2 == 2) or (dir2 == 4) or
-						(dir2 == 1 and walkable.above) or
-						(dir2 == 3 and walkable.below)
-					then
-						directions[#directions + 1] = dir2
-					end
+					directions[#directions + 1] = dir2
 				end
 			end
 
