@@ -57,9 +57,13 @@ explosion.addInstance = function(self, inType, inDirections, inPosX, inPosY, inS
 end
 
 --[[
-
+	Updates all animations of explosions currently on the map.
+	- dt: delta time since last update.
 ]]
 explosion.updateAnimation = function(self, dt)
+	for i = 1, #self.instances do
+		self.instances[i].animation:update(dt)
+	end
 end
 
 --[[
