@@ -6,6 +6,8 @@ local client = {}
 
 math.randomseed(os.time())
 
+--[[
+]]
 client.load = function(self)
 	self.window = {width = love.graphics.getWidth(), height = love.graphics.getHeight()}
 	self.players = {}
@@ -62,6 +64,8 @@ client.load = function(self)
 	explosion:addType(love.graphics.newImage("image/explosion_52FR.png"), 52, 2)
 end
 
+--[[
+]]
 client.registerCMD = function(self)
 	Net:registerCMD("getMapName",
 		function(table, param, dt, id)
@@ -115,6 +119,8 @@ client.generateRandomCharacterAnimation = function(self, duration)
 	return self:generateCharacterAnimation(math.random(self.charactersInTilesheet), duration)
 end
 
+--[[
+]]
 client.generateCharacterAnimation = function(self, id, duration)
 	local frameDuration = duration / 3
 	local row = math.floor(id / 5) * 4
@@ -128,9 +134,13 @@ client.generateCharacterAnimation = function(self, id, duration)
 	}
 end
 
+--[[
+]]
 client.mousepressed = function(self, x, y, button)
 end
 
+--[[
+]]
 client.keypressed = function(self, key)
 	if key == "escape" then
 		Net:disconnect()
@@ -152,6 +162,8 @@ client.keypressed = function(self, key)
 	end
 end
 
+--[[
+]]
 client.keyreleased = function(self, key)
 	if self.keys[key] ~= nil then
 		Net:send({}, "key_released", self.keys[key], Net.client.ip)
@@ -163,7 +175,6 @@ end
 	and generates explosions around them.
 	- dt: delta time since last update.
 ]]
-
 client.updateBombs = function(self, dt)
 	local bombs = self.bombs
 	self.bombs = {}
@@ -185,6 +196,8 @@ client.updateBombs = function(self, dt)
 	end
 end
 
+--[[
+]]
 client.update = function(self, dt)
 	self:updateBombs(dt)
 	explosion:updateAnimation(dt)
@@ -210,15 +223,20 @@ client.update = function(self, dt)
 	if love.keyboard.isDown(self.actions.right) then self.player.direction = 3; self.player.x = self.player.x + dt * self.player.speed end
 
 	Net:update(dt)
-
 end
 
+--[[
+]]
 client.draw = function(self)
 	-- draw map
 	for y = 1, #self.map.values  do
 		for x = 1, #self.map.values[y] do
-			--love.graphics.draw(self.map.tileset, self.map.tiles[self.map.values[y][x]].img, x * self.world.tileWidth - self.world.tileWidth, y * self.world.tileHeight - self.world.tileHeight)
-			love.graphics.draw(self.map.tileset, self.map.tiles[self.map.values[y][x]+1].img, (x - 1) * self.world.tileWidth, (y - 1) * self.world.tileHeight)
+			love.graphics.draw(
+				self.map.tileset,
+				self.map.tiles[self.map.values[y][x] + 1].img,
+				(x - 1) * self.world.tileWidth,
+				(y - 1) * self.world.tileHeight
+			)
 		end
 	end
 
@@ -237,7 +255,7 @@ client.draw = function(self)
 	end
 
 	-- draw player
-	self.player.animation[self.player.direction]:draw(self.player.spritesheet, self.player.x, self.player.y)
+	self.player.animation[self.player.direction]:draw( self.player.spritesheet, self.player.x, self.player.y)
 
 	-- draw explosions
 	for id = 1, #explosion.instances do
@@ -250,6 +268,8 @@ client.draw = function(self)
 	end
 end
 
+--[[
+]]
 client.quit = function(self)
 	Net:disconnect()
 end
