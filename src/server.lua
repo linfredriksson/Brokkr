@@ -55,14 +55,17 @@ server.fixedUpdate = function(self, dt)
 			Net.users[id].x = self.window.width * 0.5 - self.characterTile.width * 0.5
 			Net.users[id].y = self.window.height * 0.5 - self.characterTile.height * 0.5
 			Net.users[id].speed = 100
+			Net.users[id].bombCooldownTime = 1 -- time between player can play bombs
+			Net.users[id].bombCountdown = 0 -- time left until player can place new bomb
 			Net.users[id].direction = 1
 			Net.users[id].isMoving = 0
 			Net.users[id].actions = {up = false, down = false, left = false, right = false, bomb = false}
 		end
 
 		-- place bomb key
-		if Net.users[id].actions.bomb then
+		if Net.users[id].actions.bomb  and Net.users[id].bombCountdown <= 0 then
 			Net.users[id].actions.bomb = false
+			Net.users[id].bombCountdown = Net.users[id].bombCooldownTime
 
 			-- take location from the bottom middle of the character sprite
 			local location = {
@@ -73,6 +76,11 @@ server.fixedUpdate = function(self, dt)
 			for id, data in pairs(Net:connectedUsers()) do
 				Net:send(location, "addBomb", "", id)
 			end
+		end
+
+		Net.users[id].bombCountdown = Net.users[id].bombCountdown - dt
+		if Net.users[id].bombCountdown < 0 then
+			Net.users[id].bombCountdown = 0
 		end
 
 		local change = dt * Net.users[id].speed
