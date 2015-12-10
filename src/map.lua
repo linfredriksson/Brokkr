@@ -88,15 +88,22 @@ end
 --[[ Returns a map with walls randomly placed, as well as a border around the map. ]]
 map.randomMap = function(self, width, height)
 	local m = self:emptyMap(width, height)
-	local wall = 2
-	local floor = 0
+	local floorRate = 0.8
+	local wall = {
+		{id = 2, probability = .75},
+		{id = 3, probability = .25}
+	}
+	local floor = {
+		{id = 0, probability = 0.85},
+		{id = 1, probability = 0.15}
+	}
 
 	for y = 2, height - 1 do
 		for x = 2, width - 1 do
-			if math.random() < 0.8 then
-				m[y][x] = floor
+			if math.random() < floorRate then
+				m[y][x] = self:random(floor)
 			else
-				m[y][x] = wall
+				m[y][x] = self:random(wall)
 			end
 		end
 	end
@@ -107,20 +114,26 @@ end
 --[[ Returns a full map with only empty spaces where the characters start. ]]
 map.fullMap = function(self, width, height)
 	local m = {}
-	local wall = 2
-	local floor = 0
+	local wall = {
+		{id = 2, probability = .75},
+		{id = 3, probability = .25}
+	}
+	local floor = {
+		{id = 0, probability = 0.85},
+		{id = 1, probability = 0.15}
+	}
 
 	for y = 1, height do
 		m[y] = {}
-		for x = 1, width do m[y][x] = wall end
+		for x = 1, width do m[y][x] = self:random(wall) end
 	end
 
 	local offset = {{0, 0}, {0, 1}, {1, 0}, {1, 1}}
 	for i = 1, 4 do
-		m[offset[i][1] + 2][offset[i][2] + 2] = floor
-		m[offset[i][1] + 2][-offset[i][2] + width - 1] = floor
-		m[-offset[i][1] + height - 1][offset[i][2] + 2] = floor
-		m[-offset[i][1] + height - 1][-offset[i][2] + width - 1] = floor
+		m[offset[i][1] + 2][offset[i][2] + 2] = self:random(floor)
+		m[offset[i][1] + 2][-offset[i][2] + width - 1] = self:random(floor)
+		m[-offset[i][1] + height - 1][offset[i][2] + 2] = self:random(floor)
+		m[-offset[i][1] + height - 1][-offset[i][2] + width - 1] = self:random(floor)
 	end
 
 	return m
