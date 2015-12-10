@@ -1,5 +1,4 @@
 local anim8 = require "dependencies/anim8"
-
 local explosion = {}
 
 --[[
@@ -8,7 +7,6 @@ local explosion = {}
 explosion.initiate = function(self)
 	self.instances = {}
 	self.type = {}
-
 end
 
 --[[
@@ -103,13 +101,13 @@ end
 	- dt: delta time since last update.
 ]]
 explosion.spread = function(self, instance, inMap, dt)
+	local offsetX = {0, 1, 0, -1}
+	local offsetY = {-1, 0, 1, 0}
 	local walkable = {
 		current = true,
 		above = inMap.tiles[inMap.values[instance.y + 0][instance.x + 1] + 1].walkable,
 		below = inMap.tiles[inMap.values[instance.y + 2][instance.x + 1] + 1].walkable
 	}
-	local offsetX = {0, 1, 0, -1}
-	local offsetY = {-1, 0, 1, 0}
 
 	for dir1ID = 1, #instance.spreadDirections do
 		local dir1 = instance.spreadDirections[dir1ID]
