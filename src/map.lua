@@ -42,6 +42,28 @@ map.addTile = function(self, tiles, inWalkable, inDestructable, tileX, tileY, wo
 	}
 end
 
+--[[
+	Return a random id based on probabilities stored in table
+	- inTable: table of structure
+		{
+			{id = id1, probability = p1},
+			{id = id2, probability = p2}
+		}
+		Where probability sums up to 1
+]]
+map.random = function(self, inTable)
+	local p = math.random()
+	local cumulativeProbability = 0
+	for key, v in pairs(inTable) do
+		cumulativeProbability = cumulativeProbability + v.probability
+		if p <= cumulativeProbability then
+			return v.id
+		end
+	end
+	-- just to be safe, return the first value if all else fails
+	return table[1].id
+end
+
 --[[ Returns a empty map with only walls around the border. ]]
 map.emptyMap = function (self, width, height)
 	local m = {}
