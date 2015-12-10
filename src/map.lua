@@ -2,24 +2,44 @@ local map = {}
 
 function map:chooseMap(mapName, world)
 	local m = nil
-	if mapName == "empty" then m = map:emptyMap(world.width, world.height)
-	elseif mapName == "full" then m = map:fullMap(world.width, world.height)
-	elseif mapName == "random" then m = map:randomMap(world.width, world.height)
-	else error("There is no such a map called \""..mapName.."\"!")
+	if mapName == "empty" then
+		m = map:emptyMap(world.width, world.height)
+	elseif mapName == "full" then
+		m = map:fullMap(world.width, world.height)
+	elseif mapName == "random" then
+		m = map:randomMap(world.width, world.height)
+	else
+		error("There is no such a map called \""..mapName.."\"!")
 	end
 
 	local tileset = love.graphics.newImage("image/example_tiles_small.png")
 	local tilesetWidth = tileset:getWidth();
 	local tilesetHeight = tileset:getHeight();
 
-	tiles = {
-		{walkable = true, destructable = false, img = love.graphics.newQuad(0, 0, world.tileWidth, world.tileHeight, tilesetWidth, tilesetHeight)},
-		{walkable = true, destructable = false, img = love.graphics.newQuad(world.tileWidth, 0, world.tileWidth, world.tileHeight, tilesetWidth, tilesetHeight)},
-		{walkable = false, destructable = false, img = love.graphics.newQuad(0, world.tileHeight, world.tileWidth, world.tileHeight, tilesetWidth, tilesetHeight)},
-		{walkable = false, destructable = false, img = love.graphics.newQuad(world.tileWidth, world.tileHeight, world.tileWidth, world.tileHeight, tilesetWidth, tilesetHeight)}
-	}
+	tiles = {}
+	self:addTile(tiles, true, false, 0, 0, world, tileset)
+	self:addTile(tiles, true, false, 1, 0, world, tileset)
+	self:addTile(tiles, false, false, 0, 1, world, tileset)
+	self:addTile(tiles, false, false, 1, 1, world, tileset)
 
 	return {tileset = tileset, tiles = tiles, values = m}
+end
+
+--[[
+	Add a tile.
+]]
+map.addTile = function(self, tiles, inWalkable, inDestructable, tileX, tileY, world, tileset)
+	tiles[#tiles + 1] = {
+		walkable = inWalkable,
+		destructable = inDestructable,
+		img = love.graphics.newQuad(
+			world.tileWidth * tileX,
+			world.tileHeight * tileY,
+			world.tileWidth,
+			world.tileHeight,
+			tileset:getWidth(),
+			tileset:getHeight())
+	}
 end
 
 --[[ Returns a empty map with only walls around the border. ]]
