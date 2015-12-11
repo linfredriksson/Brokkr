@@ -49,7 +49,7 @@ end
 			{id = id1, probability = p1},
 			{id = id2, probability = p2}
 		}
-		Where probability sums up to 1
+		Where probability sums up to 1.
 ]]
 map.random = function(self, inTable)
 	local p = math.random()
@@ -60,8 +60,9 @@ map.random = function(self, inTable)
 			return v.id
 		end
 	end
-	-- just to be safe, return the first value if all else fails
-	return table[1].id
+	-- incase probability dont sum up to 1 or table is empty
+	if #table > 0 then return table[1].id end
+	return -1
 end
 
 --[[ Returns a empty map with only walls around the border. ]]
