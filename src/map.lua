@@ -65,7 +65,9 @@ map.random = function(self, inTable)
 	return -1
 end
 
---[[ Returns a empty map with only walls around the border. ]]
+--[[
+	Returns a empty map with only walls around the border.
+]]
 map.emptyMap = function (self, width, height)
 	local m = {}
 	local wall = 2
@@ -86,7 +88,9 @@ map.emptyMap = function (self, width, height)
 	return m
 end
 
---[[ Returns a map with walls randomly placed, as well as a border around the map. ]]
+--[[
+	Returns a map with walls randomly placed, as well as a border around the map.
+]]
 map.randomMap = function(self, width, height)
 	local m = self:emptyMap(width, height)
 	local floorRate = 0.8
@@ -109,10 +113,52 @@ map.randomMap = function(self, width, height)
 		end
 	end
 
+	m = self:clearStartAreas(m, self:random(floor), width, height)
+
 	return m
 end
 
---[[ Returns a full map with only empty spaces where the characters start. ]]
+--[[
+	Puts floor times on the corners in a map, used to free starting areas from walls.
+	- floorID: the tile id of wanted floor.
+	- width: width of map.
+	- height: height of map.
+]]
+map.clearStartAreas = function(self, m, floorID, width, height)
+	for i = 0, 2 do -- line of 3 floor
+		m[2][2 + i] = floorID                  -- top left
+		m[height - 1][2 + i] = floorID         -- bottom left
+		m[2][width - 1 - i] = floorID          -- topRight
+		m[height - 1][width - 1 - i] = floorID -- bottomRight
+	end
+
+	for i = 0, 1 do -- line of 2 floor
+		m[3][2 + i] = floorID
+		m[height - 2][2 + i] = floorID
+		m[3][width - 1 - i] = floorID
+		m[height - 2][width - 1 - i] = floorID
+	end
+
+	m[4][2] = floorID -- one floor
+	m[height - 3][2] = floorID
+	m[4][width - 1] = floorID
+	m[height - 3][width - 1] = floorID
+
+	-- center square
+	local w = math.floor(width / 2)
+	local h = math.floor(height / 2)
+	print(w .. ":" .. h)
+	m[h + 0][w + 0] = floorID
+	m[h + 1][w + 0] = floorID
+	m[h + 0][w + 1] = floorID
+	m[h + 1][w + 1] = floorID
+
+	return m
+end
+
+--[[
+	Returns a full map with only empty spaces where the characters start.
+]]
 map.fullMap = function(self, width, height)
 	local m = {}
 	local wall = {
