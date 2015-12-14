@@ -3,9 +3,6 @@ local noise = {
 	height = 0
 }
 
--- initialize seed for random number generator
-math.randomseed(os.time())
-
 --[[
 	Set the size of noise.
 	- inWidth: width of 2d noise array
@@ -19,7 +16,10 @@ end
 --[[
 	Generate noise values.
 ]]
-noise.generate = function(self)
+noise.generate = function(self, seed)
+	-- initialize seed for random number generator
+	math.randomseed(seed)
+
 	self.noise = {}
 	for y = 1, self.height do
 		self.noise[y] = {}
