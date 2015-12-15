@@ -1,3 +1,4 @@
+local noise = require "noise"
 local map = {}
 
 function map:chooseMap(mapName, world)
@@ -20,7 +21,7 @@ function map:chooseMap(mapName, world)
 	self:addTile(tiles, true, false, 0, 0, world, tileset)
 	self:addTile(tiles, true, false, 1, 0, world, tileset)
 	self:addTile(tiles, false, false, 0, 1, world, tileset)
-	self:addTile(tiles, false, false, 1, 1, world, tileset)
+	self:addTile(tiles, false, true, 1, 1, world, tileset)
 
 	return {tileset = tileset, tiles = tiles, values = m}
 end
@@ -103,16 +104,40 @@ map.randomMap = function(self, width, height)
 		{id = 1, probability = 0.15}
 	}
 
+	local windowWidth = love.graphics.getWidth()
+	local windowHeight = love.graphics.getHeight()
+	noise:setSize(windowWidth, windowHeight)
+
+	-- generate noise and use it to place walls and floors
+	noise:generate(os.time())
 	for y = 2, height - 1 do
 		for x = 2, width - 1 do
-			if math.random() < floorRate then
-				m[y][x] = self:random(floor)
+			local posX = math.floor((x / width) * windowWidth)
+			local posY = math.floor((y / height) * windowHeight)
+			if noise:turbulence(posX + 16, posY + 16, 64) < 0.9 then
+				m[y][x] = floor[1].id
 			else
-				m[y][x] = self:random(wall)
+				m[y][x] = wall[1].id
 			end
 		end
 	end
 
+	-- generate new noise and use it to change wall types where there is walls
+	-- and change floor types where there is floors
+	noise:generate(os.time() + 100)
+	for y = 2, height - 1 do
+		for x = 2, width - 1 do
+			local posX = math.floor((x / width) * windowWidth)
+			local posY = math.floor((y / height) * windowHeight)
+			if noise:turbulence(posX + 16, posY + 16, 64) < 0.9 then
+				if m[y][x] == floor[1].id then
+					m[y][x] = floor[2].id
+				else
+					m[y][x] = wall[2].id
+				end
+			end
+		end
+	end
 	m = self:clearStartAreas(m, self:random(floor), width, height)
 
 	return m
