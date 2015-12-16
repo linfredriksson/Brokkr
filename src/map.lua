@@ -2,17 +2,6 @@ local noise = require "noise"
 local map = {}
 
 function map:chooseMap(mapName, world)
-	local m = nil
-	if mapName == "empty" then
-		m = map:emptyMap(world.width, world.height)
-	elseif mapName == "full" then
-		m = map:fullMap(world.width, world.height)
-	elseif mapName == "random" then
-		m = map:randomMap(world.width, world.height)
-	else
-		error("There is no such a map called \""..mapName.."\"!")
-	end
-
 	local tileset = love.graphics.newImage("image/example_tiles_small.png")
 	local tilesetWidth = tileset:getWidth();
 	local tilesetHeight = tileset:getHeight();
@@ -22,6 +11,17 @@ function map:chooseMap(mapName, world)
 	self:addTile(tiles, true, false, 1, 0, world, tileset)
 	self:addTile(tiles, false, false, 0, 1, world, tileset)
 	self:addTile(tiles, false, true, 1, 1, world, tileset)
+
+	local m = nil
+	if mapName == "empty" then
+		m = map:emptyMap(world.width, world.height)
+	elseif mapName == "full" then
+		m = map:fullMap(world.width, world.height)
+	elseif mapName == "random" then
+		m = map:randomMap(world.width, world.height, tiles)
+	else
+		error("There is no such a map called \""..mapName.."\"!")
+	end
 
 	return {tileset = tileset, tiles = tiles, values = m}
 end
@@ -92,7 +92,7 @@ end
 --[[
 	Returns a map with walls randomly placed, as well as a border around the map.
 ]]
-map.randomMap = function(self, width, height)
+map.randomMap = function(self, width, height, tileset)
 	local m = self:emptyMap(width, height)
 	local floorRate = 0.8
 	local wall = {
@@ -139,6 +139,32 @@ map.randomMap = function(self, width, height)
 		end
 	end
 	m = self:clearStartAreas(m, self:random(floor), width, height)
+	m = self:destructableSimplePath(m, wall[2].id, tiles, width, height)
+
+	return m
+end
+
+--[[
+
+]]
+map.destructableSimplePath = function(self, m, wallID, tiles, width, height)
+	for i = 2, height - 1 do
+		if not tiles[m[i][5] + 1].walkable then
+			m[i][5] = wallID
+		end
+		if not tiles[m[i][width - 4] + 1].walkable then
+			m[i][width - 4] = wallID
+		end
+	end
+
+	for i = 2, width - 1 do
+		if not tiles[m[5][i] + 1].walkable then
+			m[5][i] = wallID
+		end
+		if not tiles[m[height - 4][i] + 1].walkable then
+			m[height - 4][i] = wallID
+		end
+	end
 
 	return m
 end
