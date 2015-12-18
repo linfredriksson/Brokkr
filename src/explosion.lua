@@ -103,6 +103,7 @@ end
 explosion.spread = function(self, instance, inMap, dt)
 	local offsetX = {0, 1, 0, -1}
 	local offsetY = {-1, 0, 1, 0}
+	local destructable = false
 	local walkable = {
 		current = true,
 		above = inMap.tiles[inMap.values[instance.y + 0][instance.x + 1] + 1].walkable,
@@ -116,21 +117,28 @@ explosion.spread = function(self, instance, inMap, dt)
 			x = instance.x + offsetX[dir1],
 			y = instance.y + offsetY[dir1]
 		}
+
 		walkable.current = inMap.tiles[inMap.values[pos.y + 1][pos.x + 1] + 1].walkable
+		destructable = inMap.tiles[inMap.values[pos.y + 1][pos.x + 1] + 1].destructable
 
-		if walkable.current then
-			-- find wich directions the explosion will continue to spread in
-			for dir2ID = 1, #instance.spreadDirections do
-				local dir2 = instance.spreadDirections[dir2ID]
+		if walkable.current or destructable then
+			if destructable then
+				directions = {} -- dont continue spreading if wall just got destroyed
+				inMap.values[pos.y + 1][pos.x + 1] = 0 -- change to floor, TODO: should be changed to a function in a map object instead of changing values of a array here
+			else
+				-- find wich directions the explosion will continue to spread in
+				for dir2ID = 1, #instance.spreadDirections do
+					local dir2 = instance.spreadDirections[dir2ID]
 
-				if ((dir1 == 2 and dir2 ~= 4) or -- dont add dir2 if opposite to dir1
-					(dir1 == 4 and dir2 ~= 2) or
-					(dir1 == dir2))
-					and -- only spread up or down if no wall is in the way
-					not((dir2 == 1 and not walkable.above) or
-					(dir2 == 3 and not walkable.below))
-				then
-					directions[#directions + 1] = dir2
+					if ((dir1 == 2 and dir2 ~= 4) or -- dont add dir2 if opposite to dir1
+						(dir1 == 4 and dir2 ~= 2) or
+						(dir1 == dir2))
+						and -- only spread up or down if no wall is in the way
+						not((dir2 == 1 and not walkable.above) or
+						(dir2 == 3 and not walkable.below))
+					then
+						directions[#directions + 1] = dir2
+					end
 				end
 			end
 
