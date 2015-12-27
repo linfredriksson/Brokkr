@@ -145,25 +145,28 @@ map.randomMap = function(self, width, height, tileset)
 end
 
 --[[
-
+	Create paths of destructive walls between the four corner starting areas to
+	make sure paths exist between all starting areas.
+	- m: initial map
+	- wallID: tile id of wanted destructable wall
+	- tiles: list of existing tiles
+	- width: width of map
+	- height: height of map
 ]]
 map.destructableSimplePath = function(self, m, wallID, tiles, width, height)
+	local bottom = height - 1
+	local top = 2
+	local right = width - 1
+	local left = 2
+
 	for i = 2, height - 1 do
-		if not tiles[m[i][5] + 1].walkable then
-			m[i][5] = wallID
-		end
-		if not tiles[m[i][width - 4] + 1].walkable then
-			m[i][width - 4] = wallID
-		end
+		if not tiles[m[i][left] + 1].walkable then m[i][left] = wallID end
+		if not tiles[m[i][right] + 1].walkable then m[i][right] = wallID end
 	end
 
 	for i = 2, width - 1 do
-		if not tiles[m[5][i] + 1].walkable then
-			m[5][i] = wallID
-		end
-		if not tiles[m[height - 4][i] + 1].walkable then
-			m[height - 4][i] = wallID
-		end
+		if not tiles[m[top][i] + 1].walkable then m[top][i] = wallID end
+		if not tiles[m[bottom][i] + 1].walkable then m[bottom][i] = wallID end
 	end
 
 	return m
