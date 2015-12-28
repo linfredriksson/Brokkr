@@ -6,16 +6,15 @@ function map:chooseMap(mapName, world)
 	local tilesetWidth = tileset:getWidth();
 	local tilesetHeight = tileset:getHeight();
 
-	tiles = {}
-	self:addTile(tiles, true, false, 0, 0, world, tileset)
-	self:addTile(tiles, true, false, 1, 0, world, tileset)
-	self:addTile(tiles, false, false, 0, 1, world, tileset)
-	self:addTile(tiles, false, true, 1, 1, world, tileset)
+	map.tiles = {}
+	self:addTile(true, false, 0, 0, world, tileset)
+	self:addTile(true, false, 1, 0, world, tileset)
+	self:addTile(false, false, 0, 1, world, tileset)
+	self:addTile(false, true, 1, 1, world, tileset)
 
 	--map.values = m
 	map.width = world.width
 	map.height = world.height
-	map.tiles = tiles
 	map.tileset = {
 		image = tileset,
 		width = tilesetWidth,
@@ -33,14 +32,14 @@ function map:chooseMap(mapName, world)
 		error("There is no such a map called \""..mapName.."\"!")
 	end
 
-	return {tileset = tileset, tiles = tiles, values = m}
+	return {tileset = tileset, tiles = map.tiles, values = m}
 end
 
 --[[
 	Add a tile.
 ]]
-map.addTile = function(self, tiles, inWalkable, inDestructable, tileX, tileY, world, tileset)
-	tiles[#tiles + 1] = {
+map.addTile = function(self, inWalkable, inDestructable, tileX, tileY, world, tileset)
+	map.tiles[#map.tiles + 1] = {
 		walkable = inWalkable,
 		destructable = inDestructable,
 		img = love.graphics.newQuad(
@@ -99,10 +98,10 @@ end
 map.fullMap = function(self, tileID)
 	local m = {}
 
-	for y = 1, map.height do
-		m[y] = {}
-		for x = 1, map.width do
-			m[y][x] = tileID
+	for row = 1, map.height do
+		m[row] = {}
+		for col = 1, map.width do
+			m[row][col] = tileID
 		end
 	end
 
@@ -159,7 +158,7 @@ map.randomMap = function(self)
 		end
 	end
 	m = self:clearStartAreas(m, self:random(floor), map.width, map.height)
-	m = self:destructableSimplePath(m, wall[2].id, tiles, map.width, map.height)
+	m = self:destructableSimplePath(m, wall[2].id, 1)
 
 	return m
 end
@@ -173,20 +172,20 @@ end
 	- width: width of map
 	- height: height of map
 ]]
-map.destructableSimplePath = function(self, m, wallID, tiles, width, height)
-	local bottom = height - 1
-	local top = 2
-	local right = width - 1
-	local left = 2
+map.destructableSimplePath = function(self, m, wallID, distanceToEdge)
+	local bottom = map.height - distanceToEdge
+	local top = 1 + distanceToEdge
+	local right = map.width - distanceToEdge
+	local left = 1 + distanceToEdge
 
-	for i = 2, height - 1 do
-		if not tiles[m[i][left] + 1].walkable then m[i][left] = wallID end
-		if not tiles[m[i][right] + 1].walkable then m[i][right] = wallID end
+	for i = 2, map.height - 1 do
+		if not map.tiles[m[i][left] + 1].walkable then m[i][left] = wallID end
+		if not map.tiles[m[i][right] + 1].walkable then m[i][right] = wallID end
 	end
 
-	for i = 2, width - 1 do
-		if not tiles[m[top][i] + 1].walkable then m[top][i] = wallID end
-		if not tiles[m[bottom][i] + 1].walkable then m[bottom][i] = wallID end
+	for i = 2, map.width - 1 do
+		if not map.tiles[m[top][i] + 1].walkable then m[top][i] = wallID end
+		if not map.tiles[m[bottom][i] + 1].walkable then m[bottom][i] = wallID end
 	end
 
 	return m
@@ -199,29 +198,23 @@ end
 	- height: height of map.
 ]]
 map.clearStartAreas = function(self, m, floorID, width, height)
-	for i = 0, 2 do -- line of 3 floor
-		m[2][2 + i] = floorID                  -- top left
-		m[height - 1][2 + i] = floorID         -- bottom left
-		m[2][width - 1 - i] = floorID          -- topRight
-		m[height - 1][width - 1 - i] = floorID -- bottomRight
+	local cols = 3
+	for col = 1, cols do
+		for row = 1, col do
+			-- top left
+			m[cols - col + 2][row + 1] = floorID
+			-- top right
+			m[cols - col + 2][map.width - row] = floorID
+			-- bottom left
+			m[map.height - cols + col - 1][row + 1] = floorID
+			-- bottom right
+			m[map.height - cols + col - 1][map.width - row] = floorID
+		end
 	end
-
-	for i = 0, 1 do -- line of 2 floor
-		m[3][2 + i] = floorID
-		m[height - 2][2 + i] = floorID
-		m[3][width - 1 - i] = floorID
-		m[height - 2][width - 1 - i] = floorID
-	end
-
-	m[4][2] = floorID -- one floor
-	m[height - 3][2] = floorID
-	m[4][width - 1] = floorID
-	m[height - 3][width - 1] = floorID
 
 	-- center square
 	local w = math.floor(width / 2)
 	local h = math.floor(height / 2)
-	print(w .. ":" .. h)
 	m[h + 0][w + 0] = floorID
 	m[h + 1][w + 0] = floorID
 	m[h + 0][w + 1] = floorID
