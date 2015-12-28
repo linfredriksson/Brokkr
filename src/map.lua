@@ -12,13 +12,23 @@ function map:chooseMap(mapName, world)
 	self:addTile(tiles, false, false, 0, 1, world, tileset)
 	self:addTile(tiles, false, true, 1, 1, world, tileset)
 
+	--map.values = m
+	map.width = world.width
+	map.height = world.height
+	map.tiles = tiles
+	map.tileset = {
+		image = tileset,
+		width = tilesetWidth,
+		height = tilesetHeight
+	}
+
 	local m = nil
 	if mapName == "empty" then
-		m = map:emptyMap(world.width, world.height)
+		m = map:emptyMap(2, 0)
 	elseif mapName == "full" then
-		m = map:fullMap(world.width, world.height)
+		m = map:fullMap(2)
 	elseif mapName == "random" then
-		m = map:randomMap(world.width, world.height, tiles)
+		m = map:randomMap()
 	else
 		error("There is no such a map called \""..mapName.."\"!")
 	end
@@ -69,23 +79,30 @@ end
 --[[
 	Returns a empty map with only walls around the border.
 ]]
-map.emptyMap = function (self, width, height)
-	local m = {}
-	local wall = 2
-	local floor = 0
-
+map.emptyMap = function (self, wallID, floorID)
 	-- fill map with walls
-	for row = 1, height do
-		m[row] = {}
-		for col = 1, width do
-			m[row][col] = wall
+	local m = self:fullMap(wallID)
+
+	-- fill everything except border with floors
+	for row = 2, map.height - 1 do
+		for col = 2, map.width - 1 do
+			m[row][col] = floorID
 		end
 	end
 
-	-- fill everything except border with floors
-	for row = 2, height - 1 do
-		for col = 2, width - 1 do
-			m[row][col] = floor
+	return m
+end
+
+--[[
+	Returns map filled with tiles of tileID.
+]]
+map.fullMap = function(self, tileID)
+	local m = {}
+
+	for y = 1, map.height do
+		m[y] = {}
+		for x = 1, map.width do
+			m[y][x] = tileID
 		end
 	end
 
@@ -95,8 +112,8 @@ end
 --[[
 	Returns a map with walls randomly placed, as well as a border around the map.
 ]]
-map.randomMap = function(self, width, height, tileset)
-	local m = self:emptyMap(width, height)
+map.randomMap = function(self)
+	local m = self:emptyMap(2, 0)
 	local floorRate = 0.8
 	local wall = {
 		{id = 2, probability = .75},
@@ -113,10 +130,10 @@ map.randomMap = function(self, width, height, tileset)
 
 	-- generate noise and use it to place walls and floors
 	noise:generate(os.time())
-	for y = 2, height - 1 do
-		for x = 2, width - 1 do
-			local posX = math.floor((x / width) * windowWidth)
-			local posY = math.floor((y / height) * windowHeight)
+	for y = 2, map.height - 1 do
+		for x = 2, map.width - 1 do
+			local posX = math.floor((x / map.width) * windowWidth)
+			local posY = math.floor((y / map.height) * windowHeight)
 			if noise:turbulence(posX + 16, posY + 16, 64) < 0.9 then
 				m[y][x] = floor[1].id
 			else
@@ -128,10 +145,10 @@ map.randomMap = function(self, width, height, tileset)
 	-- generate new noise and use it to change wall types where there is walls
 	-- and change floor types where there is floors
 	noise:generate(os.time() + 100)
-	for y = 2, height - 1 do
-		for x = 2, width - 1 do
-			local posX = math.floor((x / width) * windowWidth)
-			local posY = math.floor((y / height) * windowHeight)
+	for y = 2, map.height - 1 do
+		for x = 2, map.width - 1 do
+			local posX = math.floor((x / map.width) * windowWidth)
+			local posY = math.floor((y / map.height) * windowHeight)
 			if noise:turbulence(posX + 16, posY + 16, 64) < 0.9 then
 				if m[y][x] == floor[1].id then
 					m[y][x] = floor[2].id
@@ -141,8 +158,8 @@ map.randomMap = function(self, width, height, tileset)
 			end
 		end
 	end
-	m = self:clearStartAreas(m, self:random(floor), width, height)
-	m = self:destructableSimplePath(m, wall[2].id, tiles, width, height)
+	m = self:clearStartAreas(m, self:random(floor), map.width, map.height)
+	m = self:destructableSimplePath(m, wall[2].id, tiles, map.width, map.height)
 
 	return m
 end
@@ -209,36 +226,6 @@ map.clearStartAreas = function(self, m, floorID, width, height)
 	m[h + 1][w + 0] = floorID
 	m[h + 0][w + 1] = floorID
 	m[h + 1][w + 1] = floorID
-
-	return m
-end
-
---[[
-	Returns a full map with only empty spaces where the characters start.
-]]
-map.fullMap = function(self, width, height)
-	local m = {}
-	local wall = {
-		{id = 2, probability = .75},
-		{id = 3, probability = .25}
-	}
-	local floor = {
-		{id = 0, probability = 0.85},
-		{id = 1, probability = 0.15}
-	}
-
-	for y = 1, height do
-		m[y] = {}
-		for x = 1, width do m[y][x] = self:random(wall) end
-	end
-
-	local offset = {{0, 0}, {0, 1}, {1, 0}, {1, 1}}
-	for i = 1, 4 do
-		m[offset[i][1] + 2][offset[i][2] + 2] = self:random(floor)
-		m[offset[i][1] + 2][-offset[i][2] + width - 1] = self:random(floor)
-		m[-offset[i][1] + height - 1][offset[i][2] + 2] = self:random(floor)
-		m[-offset[i][1] + height - 1][-offset[i][2] + width - 1] = self:random(floor)
-	end
 
 	return m
 end
