@@ -133,10 +133,9 @@ map.randomMap = function(self)
 		for x = 2, map.width - 1 do
 			local posX = math.floor((x / map.width) * windowWidth)
 			local posY = math.floor((y / map.height) * windowHeight)
+			m[y][x] = wall[1].id
 			if noise:turbulence(posX + 16, posY + 16, 64) < 0.9 then
 				m[y][x] = floor[1].id
-			else
-				m[y][x] = wall[1].id
 			end
 		end
 	end
@@ -149,10 +148,9 @@ map.randomMap = function(self)
 			local posX = math.floor((x / map.width) * windowWidth)
 			local posY = math.floor((y / map.height) * windowHeight)
 			if noise:turbulence(posX + 16, posY + 16, 64) < 0.9 then
+				m[y][x] = wall[2].id
 				if m[y][x] == floor[1].id then
 					m[y][x] = floor[2].id
-				else
-					m[y][x] = wall[2].id
 				end
 			end
 		end
