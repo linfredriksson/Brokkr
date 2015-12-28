@@ -74,16 +74,19 @@ map.emptyMap = function (self, width, height)
 	local wall = 2
 	local floor = 0
 
-	for y = 1, height do
-		m[y]= {}
-		for x = 1, width do m[y][x] = floor end
-		m[y][width] = wall
-		m[y][1] = wall
+	-- fill map with walls
+	for row = 1, height do
+		m[row] = {}
+		for col = 1, width do
+			m[row][col] = wall
+		end
 	end
 
-	for i = 1, width do
-		m[height][i] = wall
-		m[1][i] = wall
+	-- fill everything except border with floors
+	for row = 2, height - 1 do
+		for col = 2, width - 1 do
+			m[row][col] = floor
+		end
 	end
 
 	return m
