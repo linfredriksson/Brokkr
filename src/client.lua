@@ -19,7 +19,7 @@ client.load = function(self)
 	self.map = {name = "random"} -- empty is the default value
 
 	-- Define keys for different actions
-	self.actions = {up = "up", down = "down", left = "left", right = "right", bomb = " "}
+	self.actions = {up = "up", down = "down", left = "left", right = "right", bomb = "space"}
 
 	-- Inverse of self.action, used to check if a pressed key is bound to a action
 	self.keys = {}
