@@ -56,17 +56,11 @@ noise.getSmooth = function(self, x, y)
 	local x2 = (x1 + self.width - 1) % self.width
 	local y2 = (y1 + self.height - 1) % self.height
 
-	-- lua start index at 1 instead of 0, ugly fix
-	x1 = x1 + 1
-	x2 = x2 + 1
-	y1 = y1 + 1
-	y2 = y2 + 1
-
 	local value = 0
-	value = value + fractX       * fractY       * self.noise[y1][x1]
-	value = value + fractX       * (1 - fractY) * self.noise[y2][x1]
-	value = value + (1 - fractX) * fractY       * self.noise[y1][x2]
-	value = value + (1 - fractX) * (1 - fractY) * self.noise[y2][x2]
+	value = value + fractX       * fractY       * self.noise[y1 + 1][x1 + 1] -- + 1 because lua starts with index 1
+	value = value + fractX       * (1 - fractY) * self.noise[y2 + 1][x1 + 1]
+	value = value + (1 - fractX) * fractY       * self.noise[y1 + 1][x2 + 1]
+	value = value + (1 - fractX) * (1 - fractY) * self.noise[y2 + 1][x2 + 1]
 
 	return value
 end
@@ -83,7 +77,7 @@ noise.turbulence = function(self, x, y, size)
 
 	while size >= 1 do
 		value = value + self:getSmooth(x / size, y / size) * size
-		size = size / 2
+		size = size * 0.5
 	end
 
 	return value / initialSize
