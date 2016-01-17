@@ -34,7 +34,7 @@ client.load = function(self)
 	self.sound = love.audio.newSource("sound/footstep01.ogg")
 
 	-- Set the default map
-	for k, v in pairs(Map:chooseMap(self.map.name, self.world)) do
+	for k, v in pairs(Map:create(self.map.name, 32, 32, 24, 16)) do
 		self.map[k] = v
 	end
 
@@ -70,7 +70,7 @@ client.registerCMD = function(self)
 	Net:registerCMD("getMapName",
 		function(table, param, dt, id)
 			self.map.name = table["map"]
-			for k, v in pairs(Map:chooseMap(self.map.name, self.world)) do
+			for k, v in pairs(Map:create(self.map.name, 32, 32, 24, 16)) do
 				self.map[k] = v
 			end
 		end)

@@ -1,25 +1,25 @@
 local noise = require "noise"
-local map = {}
+local map = {tileWidth = 0}
 
-function map:chooseMap(mapName, world)
+--function map:create(mapName, world)
+map.create = function(self, mapName, tileWidth, tileHeight, mapWidth, mapHeight)
 	local tileset = love.graphics.newImage("image/example_tiles_small.png")
-	local tilesetWidth = tileset:getWidth();
-	local tilesetHeight = tileset:getHeight();
-
-	map.tiles = {}
-	self:addTile(true, false, 0, 0, world, tileset)
-	self:addTile(true, false, 1, 0, world, tileset)
-	self:addTile(false, false, 0, 1, world, tileset)
-	self:addTile(false, true, 1, 1, world, tileset)
 
 	--map.values = m
-	map.width = world.width
-	map.height = world.height
-	map.tileset = {
-		image = tileset,
-		width = tilesetWidth,
-		height = tilesetHeight
-	}
+	map.width = mapWidth
+	map.height = mapHeight
+	map.tileWidth = tileWidth
+	map.tileHeight = tileHeight
+	map.tileset = {}
+	map.tileset.image = tileset
+	map.tileset.width = tileset:getWidth()
+	map.tileset.height = tileset:getHeight()
+
+	map.tiles = {}
+	self:addTile(true, false, 0, 0)
+	self:addTile(true, false, 1, 0)
+	self:addTile(false, false, 0, 1)
+	self:addTile(false, true, 1, 1)
 
 	local m = nil
 	if mapName == "empty" then
@@ -38,17 +38,17 @@ end
 --[[
 	Add a tile.
 ]]
-map.addTile = function(self, inWalkable, inDestructable, tileX, tileY, world, tileset)
+map.addTile = function(self, inWalkable, inDestructable, tileX, tileY)
 	map.tiles[#map.tiles + 1] = {
 		walkable = inWalkable,
 		destructable = inDestructable,
 		img = love.graphics.newQuad(
-			world.tileWidth * tileX,
-			world.tileHeight * tileY,
-			world.tileWidth,
-			world.tileHeight,
-			tileset:getWidth(),
-			tileset:getHeight())
+			map.tileWidth * tileX,
+			map.tileHeight * tileY,
+			map.tileWidth,
+			map.tileHeight,
+			map.tileset.width,
+			map.tileset.height)
 	}
 end
 
