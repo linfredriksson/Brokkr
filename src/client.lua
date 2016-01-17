@@ -14,9 +14,8 @@ client.load = function(self)
 	self.bombs = {}
 	self.characterTile = {grid = nil, width = 32, height = 32}
 	self.charactersInTilesheet = 7
-	self.world = {tileWidth = 32, tileHeight = 32, width = 24, height= 16}
 	self.ip, self.port, self.maxPing = "127.0.0.1", 6789, 1000
-	self.map = {name = "random"} -- empty is the default value
+	self.defaultMapName = "random"
 
 	-- Define keys for different actions
 	self.actions = {up = "up", down = "down", left = "left", right = "right", bomb = "space"}
@@ -34,9 +33,7 @@ client.load = function(self)
 	self.sound = love.audio.newSource("sound/footstep01.ogg")
 
 	-- Set the default map
-	for k, v in pairs(Map:create(self.map.name, 32, 32, 24, 16)) do
-		self.map[k] = v
-	end
+	Map:create(self.defaultMapName, 32, 32, 24, 16)
 
 	self.player = {
 		x = self.window.width * 0.5 - self.characterTile.width * 0.5, y = self.window.height * 0.5 - self.characterTile.height * 0.5,
@@ -69,10 +66,7 @@ end
 client.registerCMD = function(self)
 	Net:registerCMD("getMapName",
 		function(table, param, dt, id)
-			self.map.name = table["map"]
-			for k, v in pairs(Map:create(self.map.name, 32, 32, 24, 16)) do
-				self.map[k] = v
-			end
+			Map:create(table["map"], 32, 32, 24, 16)
 		end)
 
 	Net:registerCMD("showLocation",
@@ -229,13 +223,13 @@ end
 ]]
 client.draw = function(self)
 	-- draw map
-	for y = 1, #self.map.values  do
-		for x = 1, #self.map.values[y] do
+	for y = 1, #Map.values  do
+		for x = 1, #Map.values[y] do
 			love.graphics.draw(
-				self.map.tileset,
-				self.map.tiles[self.map.values[y][x] + 1].img,
-				(x - 1) * self.world.tileWidth,
-				(y - 1) * self.world.tileHeight
+				Map.tileset.image,
+				Map.tiles[Map.values[y][x] + 1].img,
+				(x - 1) * Map.tileWidth,
+				(y - 1) * Map.tileHeight
 			)
 		end
 	end
@@ -244,8 +238,8 @@ client.draw = function(self)
 	for id = 1, #self.bombs do
 		love.graphics.draw(
 			self.bombs[id].bombType.image,
-			self.bombs[id].x * self.world.tileWidth,
-			self.bombs[id].y * self.world.tileHeight
+			self.bombs[id].x * Map.tileWidth,
+			self.bombs[id].y * Map.tileHeight
 		)
 	end
 
@@ -262,8 +256,8 @@ client.draw = function(self)
 		local e = explosion.instances[id]
 		e.animation:draw(
 			e.type.tileset,
-			(e.x + 0.5) * self.world.tileWidth - e.type.tileWidth * 0.5,
-			(e.y + 0.5) * self.world.tileHeight - e.type.tileHeight * 0.5
+			(e.x + 0.5) * Map.tileWidth - e.type.tileWidth * 0.5,
+			(e.y + 0.5) * Map.tileHeight - e.type.tileHeight * 0.5
 		)
 	end
 end

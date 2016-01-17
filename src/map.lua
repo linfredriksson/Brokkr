@@ -32,8 +32,6 @@ map.create = function(self, mapName, tileWidth, tileHeight, mapWidth, mapHeight)
 	else
 		error("There is no such a map called \""..map.name.."\"!")
 	end
-
-	return {tileset = tileset, tiles = map.tiles, values = self.values}
 end
 
 --[[
