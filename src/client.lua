@@ -201,7 +201,7 @@ end
 client.update = function(self, dt)
 	self:updateBombs(dt)
 	explosion:updateAnimation(dt)
-	explosion:update(self.map, dt)
+	explosion:update(dt)
 
 	for k, v in pairs(self.players) do
 		if v.isMoving == "1" then

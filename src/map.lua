@@ -6,6 +6,7 @@ map.create = function(self, mapName, tileWidth, tileHeight, mapWidth, mapHeight)
 	local tileset = love.graphics.newImage("image/example_tiles_small.png")
 
 	--map.values = m
+	map.name = mapName
 	map.width = mapWidth
 	map.height = mapHeight
 	map.tileWidth = tileWidth
@@ -14,6 +15,7 @@ map.create = function(self, mapName, tileWidth, tileHeight, mapWidth, mapHeight)
 	map.tileset.image = tileset
 	map.tileset.width = tileset:getWidth()
 	map.tileset.height = tileset:getHeight()
+	map.values = nil
 
 	map.tiles = {}
 	self:addTile(true, false, 0, 0)
@@ -21,18 +23,17 @@ map.create = function(self, mapName, tileWidth, tileHeight, mapWidth, mapHeight)
 	self:addTile(false, false, 0, 1)
 	self:addTile(false, true, 1, 1)
 
-	local m = nil
-	if mapName == "empty" then
-		m = map:emptyMap(2, 0)
-	elseif mapName == "full" then
-		m = map:fullMap(2)
-	elseif mapName == "random" then
-		m = map:randomMap()
+	if map.name == "empty" then
+		map.values = map:emptyMap(2, 0)
+	elseif map.name == "full" then
+		map.values = map:fullMap(2)
+	elseif map.name == "random" then
+		map.values = map:randomMap()
 	else
-		error("There is no such a map called \""..mapName.."\"!")
+		error("There is no such a map called \""..map.name.."\"!")
 	end
 
-	return {tileset = tileset, tiles = map.tiles, values = m}
+	return {tileset = tileset, tiles = map.tiles, values = self.values}
 end
 
 --[[

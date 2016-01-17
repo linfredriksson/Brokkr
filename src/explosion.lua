@@ -1,4 +1,5 @@
 local anim8 = require "dependencies/anim8"
+local Map = require "map"
 local explosion = {}
 
 --[[
@@ -72,7 +73,7 @@ end
 	Updates all explosion instances currently on the map and spread new ones if needed.
 	- dt: delta time since last update.
 ]]
-explosion.update = function(self, inMap, dt)
+explosion.update = function(self, dt)
 	local instances = self.instances
 
 	-- empty the instance list, then add back the instances that still
@@ -85,7 +86,7 @@ explosion.update = function(self, inMap, dt)
 		instance.timer = instance.timer - dt
 
 		if instance.spreadDistance > 0 and instance.timer < instance.spreadRate then
-			self:spread(instance, inMap, dt)
+			self:spread(instance, dt)
 			instance.spreadDistance = 0
 		end
 
@@ -100,15 +101,17 @@ end
 	- instance: instance of a explosion.
 	- dt: delta time since last update.
 ]]
-explosion.spread = function(self, instance, inMap, dt)
+explosion.spread = function(self, instance, dt)
 	local offsetX = {0, 1, 0, -1}
 	local offsetY = {-1, 0, 1, 0}
 	local destructable = false
 	local walkable = {
 		current = true,
-		above = inMap.tiles[inMap.values[instance.y + 0][instance.x + 1] + 1].walkable,
-		below = inMap.tiles[inMap.values[instance.y + 2][instance.x + 1] + 1].walkable
+		above = Map.tiles[Map.values[instance.y + 0][instance.x + 1] + 1].walkable,
+		below = Map.tiles[Map.values[instance.y + 2][instance.x + 1] + 1].walkable
 	}
+
+	--Map.tiles[Map.values]
 
 	for dir1ID = 1, #instance.spreadDirections do
 		local dir1 = instance.spreadDirections[dir1ID]
@@ -118,13 +121,13 @@ explosion.spread = function(self, instance, inMap, dt)
 			y = instance.y + offsetY[dir1]
 		}
 
-		walkable.current = inMap.tiles[inMap.values[pos.y + 1][pos.x + 1] + 1].walkable
-		destructable = inMap.tiles[inMap.values[pos.y + 1][pos.x + 1] + 1].destructable
+		walkable.current =Map.tiles[Map.values[pos.y + 1][pos.x + 1] + 1].walkable
+		destructable = Map.tiles[Map.values[pos.y + 1][pos.x + 1] + 1].destructable
 
 		if walkable.current or destructable then
 			if destructable then
 				directions = {} -- dont continue spreading if wall just got destroyed
-				inMap.values[pos.y + 1][pos.x + 1] = 0 -- change to floor, TODO: should be changed to a function in a map object instead of changing values of a array here
+				Map.values[pos.y + 1][pos.x + 1] = 0 -- change to floor, TODO: should be changed to a function in a map object instead of changing values of a array here
 			else
 				-- find wich directions the explosion will continue to spread in
 				for dir2ID = 1, #instance.spreadDirections do
