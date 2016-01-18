@@ -2,7 +2,7 @@ local noise = require "noise"
 local map = {tileWidth = 0}
 
 --function map:create(mapName, world)
-map.create = function(self, mapName, tileWidth, tileHeight, mapWidth, mapHeight)
+map.create = function(self, mapName, tileWidth, tileHeight, mapWidth, mapHeight, seed)
 	local tileset = love.graphics.newImage("image/example_tiles_small.png")
 
 	--map.values = m
@@ -16,6 +16,7 @@ map.create = function(self, mapName, tileWidth, tileHeight, mapWidth, mapHeight)
 	map.tileset.width = tileset:getWidth()
 	map.tileset.height = tileset:getHeight()
 	map.values = nil
+	map.seed = seed or 0
 
 	map.tiles = {}
 	self:addTile(true, false, 0, 0)
@@ -28,7 +29,7 @@ map.create = function(self, mapName, tileWidth, tileHeight, mapWidth, mapHeight)
 	elseif map.name == "full" then
 		map.values = map:fullMap(2)
 	elseif map.name == "random" then
-		map.values = map:randomMap()
+		map.values = map:randomMap(map.seed)
 	else
 		error("There is no such a map called \""..map.name.."\"!")
 	end
@@ -127,7 +128,7 @@ map.randomMap = function(self)
 	noise:setSize(windowWidth, windowHeight)
 
 	-- generate noise and use it to place walls and floors
-	noise:generate(os.time())
+	noise:generate(map.seed)
 	for y = 2, map.height - 1 do
 		for x = 2, map.width - 1 do
 			local posX = math.floor((x / map.width) * windowWidth)
@@ -141,7 +142,7 @@ map.randomMap = function(self)
 
 	-- generate new noise and use it to change wall types where there is walls
 	-- and change floor types where there is floors
-	noise:generate(os.time() + 100)
+	noise:generate(map.seed + 100)
 	for y = 2, map.height - 1 do
 		for x = 2, map.width - 1 do
 			local posX = math.floor((x / map.width) * windowWidth)

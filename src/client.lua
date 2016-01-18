@@ -33,7 +33,7 @@ client.load = function(self)
 	self.sound = love.audio.newSource("sound/footstep01.ogg")
 
 	-- Set the default map
-	Map:create(self.defaultMapName, 32, 32, 24, 16)
+	Map:create(self.defaultMapName, 32, 32, 24, 16, os.time())
 
 	self.player = {
 		x = self.window.width * 0.5 - self.characterTile.width * 0.5, y = self.window.height * 0.5 - self.characterTile.height * 0.5,
@@ -66,7 +66,7 @@ end
 client.registerCMD = function(self)
 	Net:registerCMD("getMapName",
 		function(table, param, dt, id)
-			Map:create(table["map"], Map.tileWidth, Map.tileHeight, Map.width, Map.height)
+			Map:create(table.map, Map.tileWidth, Map.tileHeight, Map.width, Map.height, table.seed)
 		end
 	)
 

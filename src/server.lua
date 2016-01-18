@@ -1,13 +1,17 @@
 local Net = require "dependencies/Net"
+local Map = require "map"
+local explosion = require "explosion"
 local server = {}
 
 server.load = function(self)
 	self.window = {width = love.graphics.getWidth(), height = love.graphics.getHeight()}
 	self.characterTile = {grid = nil, width = 32, height = 32}
-	self.world = {tileWidth = 32, tileHeight = 32, width = 24, height= 16}
+	--self.world = {tileWidth = 32, tileHeight = 32, width = 24, height= 16}
 	self.ip, self.port, self.maxPing = nil, 6789, 3000
 	self.totalDeltaTime, self.updateTimeStep = 0, 0.01
-	self.mapTable = {map = "random"} 
+	self.mapTable = {map = "random", seed = os.time()}
+
+	Map:create(self.mapTable.map, 32, 32, 24, 16, self.mapTable.seed)
 
 	Net:init("Server")
 	Net:connect(self.ip, self.port)
@@ -15,8 +19,6 @@ server.load = function(self)
 
 	Net:registerCMD("key_pressed", function(table, param, id) self:keyRecieved(id, param, true) end)
 	Net:registerCMD("key_released", function(table, param, id) self:keyRecieved(id, param, false) end)
-
-	--self.tileset, self.tiles, self.map.values = Map:chooseMap(self.map.name, self.world)
 end
 
 server.mousepressed = function(self, x, y, button)
@@ -69,8 +71,8 @@ server.fixedUpdate = function(self, dt)
 
 			-- take location from the bottom middle of the character sprite
 			local location = {
-				mapX = math.floor((Net.users[id].x + self.characterTile.width * 0.5) / self.window.width * self.world.width),
-				mapY = math.floor((Net.users[id].y + self.characterTile.height) / self.window.height * self.world.height)
+				mapX = math.floor((Net.users[id].x + self.characterTile.width * 0.5) / self.window.width * Map.width),--self.world.width),
+				mapY = math.floor((Net.users[id].y + self.characterTile.height) / self.window.height * Map.height)--self.world.height)
 			}
 
 			for id, data in pairs(Net:connectedUsers()) do
@@ -103,12 +105,24 @@ server.fixedUpdate = function(self, dt)
 end
 
 server.draw = function(self)
+	for y = 1, #Map.values  do
+		for x = 1, #Map.values[y] do
+			love.graphics.draw(
+				Map.tileset.image,
+				Map.tiles[Map.values[y][x] + 1].img,
+				(x - 1) * Map.tileWidth,
+				(y - 1) * Map.tileHeight
+			)
+		end
+	end
+
 	love.graphics.print("SERVER", 10, 10)
 
 	local textY = 30
 	-- draw dots for all players
 	for k, v in pairs(Net.users) do
-		love.graphics.circle("fill", v.x, v.y, self.characterTile.width * 0.5)
+		love.graphics.rectangle("fill", v.x, v.y, self.characterTile.width, self.characterTile.height)
+		--love.graphics.circle("fill", v.x, v.y, self.characterTile.width * 0.5)
 		love.graphics.print(k .. ", " .. v.x .. ":" .. v.y, 10, textY)
 		textY = textY + 20
 	end
