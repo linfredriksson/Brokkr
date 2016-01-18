@@ -66,8 +66,9 @@ end
 client.registerCMD = function(self)
 	Net:registerCMD("getMapName",
 		function(table, param, dt, id)
-			Map:create(table["map"], 32, 32, 24, 16)
-		end)
+			Map:create(table["map"], Map.tileWidth, Map.tileHeight, Map.width, Map.height)
+		end
+	)
 
 	Net:registerCMD("showLocation",
 		function(table, param, dt, id)
@@ -94,7 +95,8 @@ client.registerCMD = function(self)
 				end
 			end
 
-		end)
+		end
+	)
 
 	Net:registerCMD("addBomb",
 		function(table, param, dt, id)
@@ -103,7 +105,8 @@ client.registerCMD = function(self)
 				countDown = self.bombType[1].countDown,
 				x = table.mapX, y = table.mapY
 			}
-		end)
+		end
+	)
 end
 
 --[[
