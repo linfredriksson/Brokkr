@@ -24,7 +24,7 @@ server.mousepressed = function(self, x, y, button)
 end
 
 server.keyRecieved = function(self, id, key, value)
-	if Net.users[id].actions[key] ~= nil then
+	if Net.users[id] ~= nil and Net.users[id].actions[key] ~= nil then
 		Net.users[id].actions[key] = value
 	end
 end
