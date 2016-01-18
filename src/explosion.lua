@@ -111,8 +111,6 @@ explosion.spread = function(self, instance, dt)
 		below = Map.tiles[Map.values[instance.y + 2][instance.x + 1] + 1].walkable
 	}
 
-	--Map.tiles[Map.values]
-
 	for dir1ID = 1, #instance.spreadDirections do
 		local dir1 = instance.spreadDirections[dir1ID]
 		local directions = {}

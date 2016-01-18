@@ -1,11 +1,9 @@
 local noise = require "noise"
 local map = {tileWidth = 0}
 
---function map:create(mapName, world)
 map.create = function(self, mapName, tileWidth, tileHeight, mapWidth, mapHeight, seed)
 	local tileset = love.graphics.newImage("image/example_tiles_small.png")
 
-	--map.values = m
 	map.name = mapName
 	map.width = mapWidth
 	map.height = mapHeight
