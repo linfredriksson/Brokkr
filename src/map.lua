@@ -53,6 +53,22 @@ map.addTile = function(self, inWalkable, inDestructable, tileX, tileY)
 end
 
 --[[
+	Change value of a map element.
+	- inX: column id.
+	- inY: row id.
+	- inValue: new tile index for element.
+]]
+map.setValue = function(self, inX, inY, inValue)
+	print("setValue")
+	if inX >= 1 and inX <= map.width and
+		inY >= 1 and inY <= map.height and
+		inValue >= 0 and inValue <= #map.tiles
+	then
+		map.values[inY][inX] = inValue
+	end
+end
+
+--[[
 	Return a random id based on probabilities stored in table
 	- inTable: table of structure
 		{

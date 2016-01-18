@@ -127,7 +127,7 @@ explosion.spread = function(self, instance, dt)
 		if walkable.current or destructable then
 			if destructable then
 				directions = {} -- dont continue spreading if wall just got destroyed
-				Map.values[pos.y + 1][pos.x + 1] = 0 -- change to floor, TODO: should be changed to a function in a map object instead of changing values of a array here
+				Map:setValue(pos.x + 1, pos.y + 1, 0)
 			else
 				-- find wich directions the explosion will continue to spread in
 				for dir2ID = 1, #instance.spreadDirections do
