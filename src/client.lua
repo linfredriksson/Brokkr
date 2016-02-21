@@ -34,6 +34,10 @@ client.load = function(self)
 
 	-- Set the default map
 	Map:create(self.defaultMapName, 32, 32, 24, 16, os.time())
+	--self.map = Map:create(self.defaultMapName, 32, 32, 24, 16, os.time())
+	--print("load", Map)
+	--print("load", Map.values)
+	--print("load", self.map)
 
 	self.player = {
 		x = self.window.width * 0.5 - self.characterTile.width * 0.5, y = self.window.height * 0.5 - self.characterTile.height * 0.5,
@@ -214,10 +218,7 @@ client.update = function(self, dt)
 		self.player.animation[self.player.direction]:gotoFrame(2)
 	end
 
-	if love.keyboard.isDown(self.actions.up) then self.player.direction = 2; self.player.y = self.player.y - dt * self.player.speed end
-	if love.keyboard.isDown(self.actions.down) then self.player.direction = 1; self.player.y = self.player.y + dt * self.player.speed end
-	if love.keyboard.isDown(self.actions.left) then self.player.direction = 4; self.player.x = self.player.x - dt * self.player.speed end
-	if love.keyboard.isDown(self.actions.right) then self.player.direction = 3; self.player.x = self.player.x + dt * self.player.speed end
+	self:moveCheck(dt)
 
 	Net:update(dt)
 end
@@ -269,6 +270,37 @@ end
 ]]
 client.quit = function(self)
 	Net:disconnect()
+end
+
+--[[ 
+]]
+client.moveCheck = function(self, dt)
+	local tiles, map = Map.tiles, Map.values
+	local tileWidth, tileHeight = self.characterTile.width * 0.5, self.characterTile.height
+	local absOffsetX, absOffsetY = 10, 3
+	local player, actions = self.player, self.actions
+
+	if love.keyboard.isDown(actions.up, actions.down) then
+		local dir = 1
+		self.player.direction = 1
+		if love.keyboard.isDown(actions.up) then self.player.direction = 2; dir = -1 end
+		local y = self.player.y + dir * self.player.speed * dt
+		local mapY = math.floor((tileHeight + y + dir * absOffsetY) / Map.tileHeight) + 1
+		local mapX1 = math.floor((tileWidth + self.player.x + absOffsetX) / Map.tileWidth) + 1
+		local mapX2 = math.floor((tileWidth + self.player.x - absOffsetX) / Map.tileWidth) + 1
+		if tiles[map[mapY][mapX1] + 1].walkable and tiles[map[mapY][mapX2] + 1].walkable then self.player.y = y end
+	end
+
+	if love.keyboard.isDown(actions.left, actions.right) then
+		local dir = 1
+		self.player.direction = 3
+		if love.keyboard.isDown(actions.left) then self.player.direction = 4; dir = -1 end
+		local x = self.player.x + dir * self.player.speed * dt
+		local mapX = math.floor((tileWidth + x + dir * absOffsetX) / Map.tileWidth) + 1
+		local mapY1 = math.floor((tileHeight + self.player.y + absOffsetY) / Map.tileHeight) + 1
+		local mapY2 = math.floor((tileHeight + self.player.y - absOffsetY) / Map.tileHeight) + 1
+		if tiles[map[mapY1][mapX] + 1].walkable and tiles[map[mapY2][mapX] + 1].walkable then self.player.x = x end
+	end
 end
 
 return client
