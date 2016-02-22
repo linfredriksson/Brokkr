@@ -147,7 +147,7 @@ server.moveCheck = function(self, dt, id)
 		local mapY = math.ceil((tileHeight + y + dir * absOffsetY) / Map.tileHeight)
 		local mapX1 = math.ceil((tileWidth + Net.users[id].x + absOffsetX) / Map.tileWidth)
 		local mapX2 = math.ceil((tileWidth + Net.users[id].x - absOffsetX) / Map.tileWidth)
-		if tiles[map[mapY][mapX1] + 1].walkable and tiles[map[mapY][mapX2] + 1].walkable then Net.users[id].y = y end
+		if tiles[map[mapY][mapX1]].walkable and tiles[map[mapY][mapX2]].walkable then Net.users[id].y = y end
 	end
 
 	if actions.left or actions.right then
@@ -158,7 +158,7 @@ server.moveCheck = function(self, dt, id)
 		local mapX = math.ceil((tileWidth + x + dir * absOffsetX) / Map.tileWidth)
 		local mapY1 = math.ceil((tileHeight + Net.users[id].y + absOffsetY) / Map.tileHeight)
 		local mapY2 = math.ceil((tileHeight + Net.users[id].y - absOffsetY) / Map.tileHeight)
-		if tiles[map[mapY1][mapX] + 1].walkable and tiles[map[mapY2][mapX] + 1].walkable then Net.users[id].x = x end
+		if tiles[map[mapY1][mapX]].walkable and tiles[map[mapY2][mapX]].walkable then Net.users[id].x = x end
 	end
 end
 

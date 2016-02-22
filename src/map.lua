@@ -23,9 +23,9 @@ map.create = function(self, mapName, tileWidth, tileHeight, mapWidth, mapHeight,
 	self:addTile(false, true, 1, 1)
 
 	if map.name == "empty" then
-		map.values = map:emptyMap(2, 0)
+		map.values = map:emptyMap(3, 1)
 	elseif map.name == "full" then
-		map.values = map:fullMap(2)
+		map.values = map:fullMap(3)
 	elseif map.name == "random" then
 		map.values = map:randomMap(map.seed)
 	else
@@ -60,7 +60,7 @@ map.setValue = function(self, inX, inY, inValue)
 	print("setValue")
 	if inX >= 1 and inX <= map.width and
 		inY >= 1 and inY <= map.height and
-		inValue >= 0 and inValue <= #map.tiles
+		inValue >= 1 and inValue <= #map.tiles
 	then
 		map.values[inY][inX] = inValue
 	end
@@ -126,15 +126,15 @@ end
 	Returns a map with walls randomly placed, as well as a border around the map.
 ]]
 map.randomMap = function(self)
-	local m = self:emptyMap(2, 0)
+	local m = self:emptyMap(3, 1)
 	local floorRate = 0.8
 	local wall = {
-		{id = 2, probability = .75},
-		{id = 3, probability = .25}
+		{id = 3, probability = .75},
+		{id = 4, probability = .25}
 	}
 	local floor = {
-		{id = 0, probability = 0.85},
-		{id = 1, probability = 0.15}
+		{id = 1, probability = 0.85},
+		{id = 2, probability = 0.15}
 	}
 
 	local windowWidth = love.graphics.getWidth()
@@ -191,13 +191,13 @@ map.destructableSimplePath = function(self, m, wallID, distanceToEdge)
 	local left = 1 + distanceToEdge
 
 	for i = 2, map.height - 1 do
-		if not map.tiles[m[i][left] + 1].walkable then m[i][left] = wallID end
-		if not map.tiles[m[i][right] + 1].walkable then m[i][right] = wallID end
+		if not map.tiles[m[i][left]].walkable then m[i][left] = wallID end
+		if not map.tiles[m[i][right]].walkable then m[i][right] = wallID end
 	end
 
 	for i = 2, map.width - 1 do
-		if not map.tiles[m[top][i] + 1].walkable then m[top][i] = wallID end
-		if not map.tiles[m[bottom][i] + 1].walkable then m[bottom][i] = wallID end
+		if not map.tiles[m[top][i]].walkable then m[top][i] = wallID end
+		if not map.tiles[m[bottom][i]].walkable then m[bottom][i] = wallID end
 	end
 
 	return m

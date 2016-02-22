@@ -231,7 +231,7 @@ client.draw = function(self)
 		for x = 1, #Map.values[y] do
 			love.graphics.draw(
 				Map.tileset.image,
-				Map.tiles[Map.values[y][x] + 1].img,
+				Map.tiles[Map.values[y][x]].img,
 				(x - 1) * Map.tileWidth,
 				(y - 1) * Map.tileHeight
 			)
@@ -288,7 +288,7 @@ client.moveCheck = function(self, dt)
 		local mapY = math.ceil((tileHeight + y + dir * absOffsetY) / Map.tileHeight)
 		local mapX1 = math.ceil((tileWidth + self.player.x + absOffsetX) / Map.tileWidth)
 		local mapX2 = math.ceil((tileWidth + self.player.x - absOffsetX) / Map.tileWidth)
-		if tiles[map[mapY][mapX1] + 1].walkable and tiles[map[mapY][mapX2] + 1].walkable then self.player.y = y end
+		if tiles[map[mapY][mapX1]].walkable and tiles[map[mapY][mapX2]].walkable then self.player.y = y end
 	end
 
 	if love.keyboard.isDown(actions.left, actions.right) then
@@ -299,7 +299,7 @@ client.moveCheck = function(self, dt)
 		local mapX = math.ceil((tileWidth + x + dir * absOffsetX) / Map.tileWidth)
 		local mapY1 = math.ceil((tileHeight + self.player.y + absOffsetY) / Map.tileHeight)
 		local mapY2 = math.ceil((tileHeight + self.player.y - absOffsetY) / Map.tileHeight)
-		if tiles[map[mapY1][mapX] + 1].walkable and tiles[map[mapY2][mapX] + 1].walkable then self.player.x = x end
+		if tiles[map[mapY1][mapX]].walkable and tiles[map[mapY2][mapX]].walkable then self.player.x = x end
 	end
 end
 

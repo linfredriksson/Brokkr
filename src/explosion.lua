@@ -107,8 +107,8 @@ explosion.spread = function(self, instance, dt)
 	local destructable = false
 	local walkable = {
 		current = true,
-		above = Map.tiles[Map.values[instance.y + 0][instance.x + 1] + 1].walkable,
-		below = Map.tiles[Map.values[instance.y + 2][instance.x + 1] + 1].walkable
+		above = Map.tiles[Map.values[instance.y + 0][instance.x + 1]].walkable,
+		below = Map.tiles[Map.values[instance.y + 2][instance.x + 1]].walkable
 	}
 
 	for dir1ID = 1, #instance.spreadDirections do
@@ -119,13 +119,13 @@ explosion.spread = function(self, instance, dt)
 			y = instance.y + offsetY[dir1]
 		}
 
-		walkable.current =Map.tiles[Map.values[pos.y + 1][pos.x + 1] + 1].walkable
-		destructable = Map.tiles[Map.values[pos.y + 1][pos.x + 1] + 1].destructable
+		walkable.current =Map.tiles[Map.values[pos.y + 1][pos.x + 1]].walkable
+		destructable = Map.tiles[Map.values[pos.y + 1][pos.x + 1]].destructable
 
 		if walkable.current or destructable then
 			if destructable then
 				directions = {} -- dont continue spreading if wall just got destroyed
-				Map:setValue(pos.x + 1, pos.y + 1, 0)
+				Map:setValue(pos.x + 1, pos.y + 1, 1)
 			else
 				-- find wich directions the explosion will continue to spread in
 				for dir2ID = 1, #instance.spreadDirections do
