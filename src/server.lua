@@ -85,10 +85,8 @@ server.fixedUpdate = function(self, dt)
 		end
 
 		local change = dt * Net.users[id].speed
-		if Net.users[id].actions.up then Net.users[id].direction = 2; Net.users[id].y = Net.users[id].y - change end
-		if Net.users[id].actions.down then Net.users[id].direction = 1; Net.users[id].y = Net.users[id].y + change end
-		if Net.users[id].actions.left then Net.users[id].direction = 4; Net.users[id].x = Net.users[id].x - change end
-		if Net.users[id].actions.right then Net.users[id].direction = 3; Net.users[id].x = Net.users[id].x + change end
+
+		self:moveCheck(dt, id)
 
 		Net.users[id].isMoving = 0
 		if Net.users[id].actions.up or Net.users[id].actions.down or Net.users[id].actions.left or Net.users[id].actions.right then
@@ -131,6 +129,37 @@ server.quit = function(self)
 		Net:send({}, "print", "The server has been closed.", id)
 	end
 	Net:disconnect()
+end
+
+--[[ 
+]]
+server.moveCheck = function(self, dt, id)
+	local tiles, map = Map.tiles, Map.values
+	local tileWidth, tileHeight = self.characterTile.width * 0.5, self.characterTile.height
+	local absOffsetX, absOffsetY = 10, 3
+	local actions = Net.users[id].actions
+
+	if actions.up or actions.down then
+		local dir = 1
+		Net.users[id].direction = 1
+		if actions.up then Net.users[id].direction = 2; dir = -1 end
+		local y = Net.users[id].y + dir * Net.users[id].speed * dt
+		local mapY = math.ceil((tileHeight + y + dir * absOffsetY) / Map.tileHeight)
+		local mapX1 = math.ceil((tileWidth + Net.users[id].x + absOffsetX) / Map.tileWidth)
+		local mapX2 = math.ceil((tileWidth + Net.users[id].x - absOffsetX) / Map.tileWidth)
+		if tiles[map[mapY][mapX1]].walkable and tiles[map[mapY][mapX2]].walkable then Net.users[id].y = y end
+	end
+
+	if actions.left or actions.right then
+		local dir = 1
+		Net.users[id].direction = 3
+		if actions.left then Net.users[id].direction = 4; dir = -1 end
+		local x = Net.users[id].x + dir * Net.users[id].speed * dt
+		local mapX = math.ceil((tileWidth + x + dir * absOffsetX) / Map.tileWidth)
+		local mapY1 = math.ceil((tileHeight + Net.users[id].y + absOffsetY) / Map.tileHeight)
+		local mapY2 = math.ceil((tileHeight + Net.users[id].y - absOffsetY) / Map.tileHeight)
+		if tiles[map[mapY1][mapX]].walkable and tiles[map[mapY2][mapX]].walkable then Net.users[id].x = x end
+	end
 end
 
 return server
