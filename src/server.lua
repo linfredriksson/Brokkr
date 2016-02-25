@@ -1,6 +1,7 @@
 local Net = require "dependencies/Net"
 local Map = require "map"
 local explosion = require "explosion"
+local bomb = require "bomb"
 local server = {}
 
 server.load = function(self)
@@ -11,6 +12,16 @@ server.load = function(self)
 	self.mapTable = {map = "random", seed = os.time()}
 
 	Map:create(self.mapTable.map, 32, 32, 24, 16, self.mapTable.seed)
+
+	-- bomb/explosion addType should not be done here as it is used by both client and server
+	bomb:initiate()
+	bomb:addType("image/bomb1.png", 1, 2, 1.8)
+
+	explosion:initiate()
+	explosion:addType(love.graphics.newImage("image/explosion_34FR.png"), 34, 2)
+	explosion:addType(love.graphics.newImage("image/explosion_47FR.png"), 47, 2)
+	explosion:addType(love.graphics.newImage("image/explosion_50FR.png"), 50, 2)
+	explosion:addType(love.graphics.newImage("image/explosion_52FR.png"), 52, 2)
 
 	Net:init("Server")
 	Net:connect(self.ip, self.port)
@@ -46,6 +57,9 @@ end
 server.fixedUpdate = function(self, dt)
 	Net:update(dt)
 
+	bomb:update(dt)
+	explosion:update(dt)
+
 	local clients = {}
 
 	for id, data in pairs(Net:connectedUsers()) do
@@ -73,6 +87,8 @@ server.fixedUpdate = function(self, dt)
 				mapX = math.floor((Net.users[id].x + self.characterTile.width * 0.5) / self.window.width * Map.width),
 				mapY = math.floor((Net.users[id].y + self.characterTile.height) / self.window.height * Map.height)
 			}
+
+			bomb:addInstance(1, location.mapX, location.mapY)
 
 			for id, data in pairs(Net:connectedUsers()) do
 				Net:send(location, "addBomb", "", id)
@@ -131,7 +147,7 @@ server.quit = function(self)
 	Net:disconnect()
 end
 
---[[ 
+--[[
 ]]
 server.moveCheck = function(self, dt, id)
 	local tiles, map = Map.tiles, Map.values

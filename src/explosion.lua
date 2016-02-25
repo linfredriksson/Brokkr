@@ -36,7 +36,7 @@ explosion.addType = function(self, inImage, inNumberOfTiles, inAnimationDuration
 end
 
 --[[
-	Creates a explosion instance on the map square newX, newY.
+	Creates a explosion instance on the map square inPosX, inPosY.
 	- inDirections: is used to show in wich directions the explosion will spread.
 		1, 2, 3, 4 equals to up, right, down, left.
 	- inPosX: is the x coordinate in the self.map.

@@ -2,6 +2,7 @@ local anim8 = require "dependencies/anim8"
 local Net = require "dependencies/Net"
 local Map = require "map"
 local explosion = require "explosion"
+local bomb = require "bomb"
 local client = {}
 
 math.randomseed(os.time())
@@ -11,7 +12,7 @@ math.randomseed(os.time())
 client.load = function(self)
 	self.window = {width = love.graphics.getWidth(), height = love.graphics.getHeight()}
 	self.players = {}
-	self.bombs = {}
+	--self.bombs = {}
 	self.characterTile = {grid = nil, width = 32, height = 32}
 	self.charactersInTilesheet = 7
 	self.ip, self.port, self.maxPing = "127.0.0.1", 6789, 1000
@@ -49,14 +50,9 @@ client.load = function(self)
 	self.characterTile.grid = anim8.newGrid(self.characterTile.width, self.characterTile.height, self.player.spritesheet:getWidth(), self.player.spritesheet:getHeight())
 	self.player.animation = self:generateCharacterAnimation(1, 0.6)
 
-	self.bombType = {
-		{	image = love.graphics.newImage("image/bomb1.png"),
-			countDown = 1,
-			spreadDistance = 2,
-			spreadRate = 1.8,
-			directions = {1, 2, 3, 4}
-		}
-	}
+	-- bomb/explosion addType should not be done here as it is used by both client and server
+	bomb:initiate()
+	bomb:addType("image/bomb1.png", 1, 2, 1.8)
 
 	explosion:initiate()
 	explosion:addType(love.graphics.newImage("image/explosion_34FR.png"), 34, 2)
@@ -104,11 +100,7 @@ client.registerCMD = function(self)
 
 	Net:registerCMD("addBomb",
 		function(table, param, dt, id)
-			self.bombs[#self.bombs + 1] = {
-				bombType = self.bombType[1],
-				countDown = self.bombType[1].countDown,
-				x = table.mapX, y = table.mapY
-			}
+			bomb:addInstance(1, table.mapX, table.mapY)
 		end
 	)
 end
@@ -172,35 +164,10 @@ client.keyreleased = function(self, key)
 end
 
 --[[
-	Updates all bombs placed on the map, counts them down untill they explode
-	and generates explosions around them.
-	- dt: delta time since last update.
-]]
-client.updateBombs = function(self, dt)
-	local bombs = self.bombs
-	self.bombs = {}
-	for i = 1, #bombs do
-		local bomb = bombs[i]
-		bomb.countDown = bomb.countDown - dt
-
-		if bomb.countDown < 0.0 then
-			explosion:addInstance(
-				bomb.bombType.directions,
-				bomb.x,
-				bomb.y,
-				bomb.bombType.spreadDistance,
-				bomb.bombType.spreadRate
-			)
-		else
-			self.bombs[#self.bombs + 1] = bomb
-		end
-	end
-end
-
---[[
 ]]
 client.update = function(self, dt)
-	self:updateBombs(dt)
+	--self:updateBombs(dt)
+	bomb:update(dt)
 	explosion:updateAnimation(dt)
 	explosion:update(dt)
 
@@ -239,11 +206,18 @@ client.draw = function(self)
 	end
 
 	-- draw bombs
-	for id = 1, #self.bombs do
+	--[[for id = 1, #self.bombs do
 		love.graphics.draw(
 			self.bombs[id].bombType.image,
 			self.bombs[id].x * Map.tileWidth,
 			self.bombs[id].y * Map.tileHeight
+		)
+	end]]
+	for id = 1, #bomb.instances do
+		love.graphics.draw(
+			bomb.type[bomb.instances[id].bombTypeID].image,
+			bomb.instances[id].x * Map.tileWidth,
+			bomb.instances[id].y * Map.tileHeight
 		)
 	end
 
@@ -272,7 +246,7 @@ client.quit = function(self)
 	Net:disconnect()
 end
 
---[[ 
+--[[
 ]]
 client.moveCheck = function(self, dt)
 	local tiles, map = Map.tiles, Map.values
