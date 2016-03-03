@@ -42,7 +42,7 @@ client.load = function(self)
 
 	self.player = {
 		x = self.window.width * 0.5 - self.characterTile.width * 0.5, y = self.window.height * 0.5 - self.characterTile.height * 0.5,
-		direction = 1, speed = 100,
+		direction = 1, speed = 100, health = 100,
 		spritesheet = love.graphics.newImage("image/characters1.png"),
 		animation = {}
 	}
@@ -80,13 +80,13 @@ client.registerCMD = function(self)
 				if self.players[k] == nil then -- initiate if not done already
 					self.players[k] = {}
 					self.players[k].animation = self:generateCharacterAnimation(1, 0.6)
-					self.players[k].maxHealth = 1;
-					self.players[k].health = 0;
+					self.players[k].maxHealth = 100;
+					self.players[k].health = 100;
 				end
 
 				-- player is still in the network
 				self.players[k].alive = true
-				self.players[k].x, self.players[k].y, self.players[k].direction, self.players[k].isMoving = v:match("^(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*)$")
+				self.players[k].x, self.players[k].y, self.players[k].direction, self.players[k].isMoving, self.players[k].health = v:match("(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*)$")
 			end
 
 			for k, v in pairs(self.players) do
@@ -187,6 +187,8 @@ client.update = function(self, dt)
 		self.player.animation[self.player.direction]:gotoFrame(2)
 	end
 
+
+	self:explosionCheck()
 	self:moveCheck(dt)
 
 	Net:update(dt)
@@ -286,5 +288,23 @@ client.moveCheck = function(self, dt)
 		if tiles[map[mapY1][mapX]].walkable and tiles[map[mapY2][mapX]].walkable then self.player.x = x end
 	end
 end
+
+--[[
+]]
+client.explosionCheck = function(self)
+	for id = 1, #explosion.instances do
+		local e = explosion.instances[id]
+		if e.x == math.ceil(self.player.x / Map.tileWidth) and e.y == math.ceil(self.player.y / Map.tileHeight) then
+			self.player.health = self.player.health - 1
+		end
+		if self.player.health < 0 then
+			--self.player.x = self.window.width * 0.5 - self.characterTile.width * 0.5
+			--self.player.y = self.window.height * 0.5 - self.characterTile.height * 0.5
+			self.player.health = 100
+		end
+		--print("My HP now is", self.player.health)
+	end
+end
+
 
 return client

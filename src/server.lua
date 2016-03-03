@@ -74,6 +74,7 @@ server.fixedUpdate = function(self, dt)
 			Net.users[id].bombCountdown = 0 -- time left until player can place new bomb
 			Net.users[id].direction = 1
 			Net.users[id].isMoving = 0
+			Net.users[id].health = 100
 			Net.users[id].actions = {up = false, down = false, left = false, right = false, bomb = false}
 		end
 
@@ -102,6 +103,7 @@ server.fixedUpdate = function(self, dt)
 
 		local change = dt * Net.users[id].speed
 
+		self:explosionCheck(id)
 		self:moveCheck(dt, id)
 
 		Net.users[id].isMoving = 0
@@ -109,12 +111,13 @@ server.fixedUpdate = function(self, dt)
 			Net.users[id].isMoving = 1
 		end
 
-		clients[id] = Net.users[id].x .. "," .. Net.users[id].y .. "," .. Net.users[id].direction .. "," .. Net.users[id].isMoving
+		clients[id] = Net.users[id].x .. "," .. Net.users[id].y .. "," .. Net.users[id].direction .. "," .. Net.users[id].isMoving .. "," .. Net.users[id].health
 	end
 
 	for id, data in pairs(Net:connectedUsers()) do
 		Net:send(clients, "showLocation", "", id)
 	end
+
 end
 
 server.draw = function(self)
@@ -175,6 +178,21 @@ server.moveCheck = function(self, dt, id)
 		local mapY1 = math.ceil((tileHeight + Net.users[id].y + absOffsetY) / Map.tileHeight)
 		local mapY2 = math.ceil((tileHeight + Net.users[id].y - absOffsetY) / Map.tileHeight)
 		if tiles[map[mapY1][mapX]].walkable and tiles[map[mapY2][mapX]].walkable then Net.users[id].x = x end
+	end
+end
+
+server.explosionCheck = function(self, userID)
+	for id = 1, #explosion.instances do
+		local e = explosion.instances[id]
+		if e.x == math.ceil(Net.users[userID].x / Map.tileWidth) and e.y == math.ceil(Net.users[userID].y / Map.tileHeight) then
+			Net.users[userID].health =  Net.users[userID].health - 1
+		end
+		if Net.users[userID].health < 0 then
+			Net.users[userID].x = self.window.width * 0.5 - self.characterTile.width * 0.5
+			Net.users[userID].y = self.window.height * 0.5 - self.characterTile.height * 0.5
+			Net.users[userID].health = 100
+		end
+		--print("player", userID, "health=", Net.users[userID].health)
 	end
 end
 
