@@ -80,6 +80,8 @@ client.registerCMD = function(self)
 				if self.players[k] == nil then -- initiate if not done already
 					self.players[k] = {}
 					self.players[k].animation = self:generateCharacterAnimation(1, 0.6)
+					self.players[k].maxHealth = 1;
+					self.players[k].health = 0;
 				end
 
 				-- player is still in the network
@@ -225,6 +227,14 @@ client.draw = function(self)
 	for k, v in pairs(self.players) do
 		v.animation[tonumber(v.direction)]:draw(self.player.spritesheet, v.x, v.y)
 	end
+
+	-- render health bars
+	love.graphics.setColor(255, 0, 0, 100)
+	for k, v in pairs(self.players) do
+		local healthScale = v.health / v.maxHealth
+		love.graphics.rectangle("fill", v.x + self.characterTile.width, v.y + self.characterTile.height * (1 - healthScale), 10, self.characterTile.height * healthScale)
+	end
+	love.graphics.setColor(255, 255, 255, 255)
 
 	-- draw player
 	self.player.animation[self.player.direction]:draw( self.player.spritesheet, self.player.x, self.player.y)
