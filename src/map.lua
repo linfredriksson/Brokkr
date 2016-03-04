@@ -24,6 +24,8 @@ map.create = function(self, mapName, tileWidth, tileHeight, mapWidth, mapHeight,
 
 	if map.name == "empty" then
 		map.values = map:emptyMap(3, 1)
+	elseif map.name == "lobby" then
+		map.values = map:lobbyMap(3, 1, 2)
 	elseif map.name == "full" then
 		map.values = map:fullMap(3)
 	elseif map.name == "random" then
@@ -100,6 +102,32 @@ map.emptyMap = function (self, wallID, floorID)
 	for row = 2, map.height - 1 do
 		for col = 2, map.width - 1 do
 			m[row][col] = floorID
+		end
+	end
+
+	return m
+end
+
+--[[
+	Returns a empty map with walls around the border. Part of the floor have a
+	different texture to indicate location of map that players have to stand on
+	to start a new game round.
+]]
+map.lobbyMap = function (self, wallID, floorID1, floorID2)
+	-- fill map with walls
+	local m = self:fullMap(wallID)
+	local halfHeight = map.height * 0.5
+	local halfWidth = map.width * 0.5
+
+	-- fill everything except border with floors
+	for row = 2, map.height - 1 do
+		for col = 2, map.width - 1 do
+			m[row][col] = floorID1
+
+			local squareSize = 2
+			if row > halfHeight - squareSize and row < halfHeight + squareSize + 1 and col > halfWidth - squareSize and col < halfWidth + squareSize + 1 then
+				m[row][col] = floorID2
+			end
 		end
 	end
 
