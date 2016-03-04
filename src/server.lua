@@ -9,9 +9,11 @@ server.load = function(self)
 	self.characterTile = {grid = nil, width = 32, height = 32}
 	self.ip, self.port, self.maxPing = nil, 6789, 3000
 	self.totalDeltaTime, self.updateTimeStep = 0, 0.01
-	self.mapTable = {map = "random", seed = os.time()}
+	self.gameMap = {map = "random", seed = os.time()}
+	self.lobbyMap = {map = "lobby", seed = 0}
+	self.gameIsRunning = false
 
-	Map:create(self.mapTable.map, 32, 32, 24, 16, self.mapTable.seed)
+	Map:create(self.lobbyMap.map, 32, 32, 24, 16, 0)
 
 	-- bomb/explosion addType should not be done here as it is used by both client and server
 	bomb:initiate()
@@ -35,7 +37,7 @@ server.mousepressed = function(self, x, y, button)
 end
 
 server.keyRecieved = function(self, id, key, value)
-	if Net.users[id] ~= nil and Net.users[id].actions[key] ~= nil then
+	if Net.users[id] ~= nil and Net.users[id].greeted == true and Net.users[id].actions[key] ~= nil then
 		Net.users[id].actions[key] = value
 	end
 end
@@ -55,18 +57,60 @@ server.update = function(self, dt)
 end
 
 server.fixedUpdate = function(self, dt)
+	local clients = {}
 	Net:update(dt)
 
-	bomb:update(dt)
-	explosion:update(dt)
+	if self.gameIsRunning == false then
+		self:runLobby(clients, dt)
+	end
 
-	local clients = {}
+	if self.gameIsRunning == true then
+		self:runMatch(clients, dt)
+	end
+
+	for id, data in pairs(Net:connectedUsers()) do
+		Net:send(clients, "showLocation", "", id)
+	end
+end
+
+server.runLobby = function(self, clients, dt)
+	local allPlayersInStartZone = true
 
 	for id, data in pairs(Net:connectedUsers()) do
 		if data.greeted ~= true then
 			Net:send({}, "print", "Welcome to Brokkr! Now the server is up.", id)
-			Net:send(self.mapTable, "getMapName", "", id)
+			Net:send(self.lobbyMap, "getMapName", "", id)
 			data.greeted = true
+			Net.users[id].x = self.window.width * 0.5 - self.characterTile.width * 0.5
+			Net.users[id].y = self.window.height * 0.5 - 100
+			Net.users[id].speed = 100
+			Net.users[id].bombCooldownTime = 1 -- time between player can play bombs
+			Net.users[id].bombCountdown = 0 -- time left until player can place new bomb
+			Net.users[id].direction = 1
+			Net.users[id].isMoving = 0
+			Net.users[id].health = 100
+			Net.users[id].actions = {up = false, down = false, left = false, right = false, bomb = false}
+		end
+
+		self:moveCheck(dt, id)
+		Net.users[id].isMoving = 0
+		if Net.users[id].actions.up or Net.users[id].actions.down or Net.users[id].actions.left or Net.users[id].actions.right then
+			Net.users[id].isMoving = 1
+		end
+
+		clients[id] = Net.users[id].x .. "," .. Net.users[id].y .. "," .. Net.users[id].direction .. "," .. Net.users[id].isMoving .. "," .. Net.users[id].health
+
+		-- ckeck to see if any players are outside of the start square on the map
+		if Net.users[id].x < 304 or Net.users[id].x > 432 or Net.users[id].y < 160 or Net.users[id].y > 288 then
+			allPlayersInStartZone = false
+		end
+	end
+
+	-- if all players are in the start square on the map, then start a new match
+	if allPlayersInStartZone == true then
+		for id, data in pairs(Net:connectedUsers()) do
+			Net:send({}, "print", "New game is starting", id)
+			Net:send(self.gameMap, "getMapName", "", id)
 			Net.users[id].x = self.window.width * 0.5 - self.characterTile.width * 0.5
 			Net.users[id].y = self.window.height * 0.5 - self.characterTile.height * 0.5
 			Net.users[id].speed = 100
@@ -77,47 +121,57 @@ server.fixedUpdate = function(self, dt)
 			Net.users[id].health = 100
 			Net.users[id].actions = {up = false, down = false, left = false, right = false, bomb = false}
 		end
-
-		-- place bomb key
-		if Net.users[id].actions.bomb  and Net.users[id].bombCountdown <= 0 then
-			Net.users[id].actions.bomb = false
-			Net.users[id].bombCountdown = Net.users[id].bombCooldownTime
-
-			-- take location from the bottom middle of the character sprite
-			local location = {
-				mapX = math.floor((Net.users[id].x + self.characterTile.width * 0.5) / self.window.width * Map.width),
-				mapY = math.floor((Net.users[id].y + self.characterTile.height) / self.window.height * Map.height)
-			}
-
-			bomb:addInstance(1, location.mapX, location.mapY)
-
-			for id, data in pairs(Net:connectedUsers()) do
-				Net:send(location, "addBomb", "", id)
-			end
-		end
-
-		Net.users[id].bombCountdown = Net.users[id].bombCountdown - dt
-		if Net.users[id].bombCountdown < 0 then
-			Net.users[id].bombCountdown = 0
-		end
-
-		local change = dt * Net.users[id].speed
-
-		self:explosionCheck(id)
-		self:moveCheck(dt, id)
-
-		Net.users[id].isMoving = 0
-		if Net.users[id].actions.up or Net.users[id].actions.down or Net.users[id].actions.left or Net.users[id].actions.right then
-			Net.users[id].isMoving = 1
-		end
-
-		clients[id] = Net.users[id].x .. "," .. Net.users[id].y .. "," .. Net.users[id].direction .. "," .. Net.users[id].isMoving .. "," .. Net.users[id].health
+		Map:create(self.gameMap.map, 32, 32, 24, 16, self.gameMap.seed)
+		self.gameIsRunning = true
 	end
+end
+
+server.runMatch = function(self, clients, dt)
+	local allPlayersDead = true
+	bomb:update(dt)
+	explosion:update(dt)
 
 	for id, data in pairs(Net:connectedUsers()) do
-		Net:send(clients, "showLocation", "", id)
+		if data.greeted == true then
+			allPlayersDead = false
+			-- place bomb key
+			if Net.users[id].actions.bomb  and Net.users[id].bombCountdown <= 0 then
+				Net.users[id].actions.bomb = false
+				Net.users[id].bombCountdown = Net.users[id].bombCooldownTime
+
+				-- take location from the bottom middle of the character sprite
+				local location = {
+					mapX = math.floor((Net.users[id].x + self.characterTile.width * 0.5) / self.window.width * Map.width),
+					mapY = math.floor((Net.users[id].y + self.characterTile.height) / self.window.height * Map.height)
+				}
+				bomb:addInstance(1, location.mapX, location.mapY)
+				for id, data in pairs(Net:connectedUsers()) do
+					Net:send(location, "addBomb", "", id)
+				end
+			end
+
+			Net.users[id].bombCountdown = Net.users[id].bombCountdown - dt
+			if Net.users[id].bombCountdown < 0 then Net.users[id].bombCountdown = 0 end
+
+			self:explosionCheck(id)
+			self:moveCheck(dt, id)
+
+			Net.users[id].isMoving = 0
+			if Net.users[id].actions.up or Net.users[id].actions.down or Net.users[id].actions.left or Net.users[id].actions.right then
+				Net.users[id].isMoving = 1
+			end
+
+			clients[id] = Net.users[id].x .. "," .. Net.users[id].y .. "," .. Net.users[id].direction .. "," .. Net.users[id].isMoving .. "," .. Net.users[id].health
+		end
 	end
 
+	-- if no players left alive go to lobby
+	if allPlayersDead == true then
+		self.gameIsRunning = false
+		Map:create(self.lobbyMap.map, 32, 32, 24, 16, 0)
+		explosion.instances = {}
+		bomb.instances = {}
+	end
 end
 
 server.draw = function(self)
@@ -137,9 +191,11 @@ server.draw = function(self)
 	local textY = 30
 	-- draw all players
 	for k, v in pairs(Net.users) do
-		love.graphics.rectangle("fill", v.x, v.y, self.characterTile.width, self.characterTile.height)
-		love.graphics.print(k .. ", " .. v.x .. ":" .. v.y, 10, textY)
-		textY = textY + 20
+		if v.greeted == true then
+			love.graphics.rectangle("fill", v.x, v.y, self.characterTile.width, self.characterTile.height)
+			love.graphics.print(k .. ", " .. v.x .. ":" .. v.y, 10, textY)
+			textY = textY + 20
+		end
 	end
 end
 
@@ -188,11 +244,8 @@ server.explosionCheck = function(self, userID)
 			Net.users[userID].health =  Net.users[userID].health - 1
 		end
 		if Net.users[userID].health < 0 then
-			Net.users[userID].x = self.window.width * 0.5 - self.characterTile.width * 0.5
-			Net.users[userID].y = self.window.height * 0.5 - self.characterTile.height * 0.5
-			Net.users[userID].health = 100
+			Net.users[userID].greeted = false
 		end
-		--print("player", userID, "health=", Net.users[userID].health)
 	end
 end
 

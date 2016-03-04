@@ -12,7 +12,6 @@ math.randomseed(os.time())
 client.load = function(self)
 	self.window = {width = love.graphics.getWidth(), height = love.graphics.getHeight()}
 	self.players = {}
-	--self.bombs = {}
 	self.characterTile = {grid = nil, width = 32, height = 32}
 	self.charactersInTilesheet = 7
 	self.ip, self.port, self.maxPing = "127.0.0.1", 6789, 1000
@@ -35,10 +34,6 @@ client.load = function(self)
 
 	-- Set the default map
 	Map:create(self.defaultMapName, 32, 32, 24, 16, os.time())
-	--self.map = Map:create(self.defaultMapName, 32, 32, 24, 16, os.time())
-	--print("load", Map)
-	--print("load", Map.values)
-	--print("load", self.map)
 
 	self.player = {
 		x = self.window.width * 0.5 - self.characterTile.width * 0.5, y = self.window.height * 0.5 - self.characterTile.height * 0.5,
@@ -168,7 +163,6 @@ end
 --[[
 ]]
 client.update = function(self, dt)
-	--self:updateBombs(dt)
 	bomb:update(dt)
 	explosion:updateAnimation(dt)
 	explosion:update(dt)
@@ -208,15 +202,7 @@ client.draw = function(self)
 			)
 		end
 	end
-
-	-- draw bombs
-	--[[for id = 1, #self.bombs do
-		love.graphics.draw(
-			self.bombs[id].bombType.image,
-			self.bombs[id].x * Map.tileWidth,
-			self.bombs[id].y * Map.tileHeight
-		)
-	end]]
+	
 	for id = 1, #bomb.instances do
 		love.graphics.draw(
 			bomb.type[bomb.instances[id].bombTypeID].image,
