@@ -182,7 +182,7 @@ client.update = function(self, dt)
 	end
 
 
-	self:explosionCheck()
+	self:explosionCheck(dt)
 	self:moveCheck(dt)
 
 	Net:update(dt)
@@ -277,18 +277,9 @@ end
 
 --[[
 ]]
-client.explosionCheck = function(self)
-	for id = 1, #explosion.instances do
-		local e = explosion.instances[id]
-		if e.x == math.ceil(self.player.x / Map.tileWidth) and e.y == math.ceil(self.player.y / Map.tileHeight) then
-			self.player.health = self.player.health - 1
-		end
-		if self.player.health < 0 then
-			--self.player.x = self.window.width * 0.5 - self.characterTile.width * 0.5
-			--self.player.y = self.window.height * 0.5 - self.characterTile.height * 0.5
-			self.player.health = 100
-		end
-		--print("My HP now is", self.player.health)
+client.explosionCheck = function(self, dt)
+	if explosion:playerCheck(self.player) then
+		self.player.health =  self.player.health - dt * 100 --stable dt is 0.01
 	end
 end
 

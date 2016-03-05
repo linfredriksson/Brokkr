@@ -154,4 +154,22 @@ explosion.spread = function(self, instance, dt)
 	end
 end
 
+--[[
+	Checks if the player in an explosion tile
+	- player: player object with coordination values.
+]]
+explosion.playerCheck = function(self, player)
+	local match = false
+	local x = math.ceil(player.x / Map.tileWidth)
+	local y = math.ceil(player.y / Map.tileHeight)
+	for id = 1, #self.instances do
+		local e = self.instances[id]
+		if e.x == x and e.y == y then
+			match = true
+			break
+		end
+	end
+	return match
+end
+
 return explosion

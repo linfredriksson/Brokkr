@@ -153,7 +153,7 @@ server.runMatch = function(self, clients, dt)
 			Net.users[id].bombCountdown = Net.users[id].bombCountdown - dt
 			if Net.users[id].bombCountdown < 0 then Net.users[id].bombCountdown = 0 end
 
-			self:explosionCheck(id)
+			self:explosionCheck(dt, id)
 			self:moveCheck(dt, id)
 
 			Net.users[id].isMoving = 0
@@ -237,15 +237,14 @@ server.moveCheck = function(self, dt, id)
 	end
 end
 
-server.explosionCheck = function(self, userID)
-	for id = 1, #explosion.instances do
-		local e = explosion.instances[id]
-		if e.x == math.ceil(Net.users[userID].x / Map.tileWidth) and e.y == math.ceil(Net.users[userID].y / Map.tileHeight) then
-			Net.users[userID].health =  Net.users[userID].health - 1
-		end
-		if Net.users[userID].health < 0 then
-			Net.users[userID].greeted = false
-		end
+--[[
+]]
+server.explosionCheck = function(self, dt, id)
+	if explosion:playerCheck(Net.users[id]) then
+		Net.users[id].health =  Net.users[id].health - dt * 100 --stable dt is 0.01
+	end
+	if Net.users[id].health < 0 then
+		Net.users[id].greeted = false
 	end
 end
 
