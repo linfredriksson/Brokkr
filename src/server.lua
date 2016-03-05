@@ -75,6 +75,7 @@ end
 
 server.runLobby = function(self, clients, dt)
 	local allPlayersInStartZone = true
+	local numberOfPlayers = 0
 
 	for id, data in pairs(Net:connectedUsers()) do
 		if data.greeted ~= true then
@@ -104,15 +105,25 @@ server.runLobby = function(self, clients, dt)
 		if Net.users[id].x < 304 or Net.users[id].x > 432 or Net.users[id].y < 160 or Net.users[id].y > 288 then
 			allPlayersInStartZone = false
 		end
+
+		-- count number of players currently in lobby
+		numberOfPlayers = numberOfPlayers + 1
 	end
 
 	-- if all players are in the start square on the map, then start a new match
 	if allPlayersInStartZone == true then
+		local startPositions = {
+			{x = 1, y = 1},
+			{x = Map.width - 2, y = 1},
+			{x = Map.width - 2, y = Map.height - 2},
+			{x = 1, y = Map.height - 2}
+		}
+		local startPositionIndex = 0
 		for id, data in pairs(Net:connectedUsers()) do
 			Net:send({}, "print", "New game is starting", id)
 			Net:send(self.gameMap, "getMapName", "", id)
-			Net.users[id].x = self.window.width * 0.5 - self.characterTile.width * 0.5
-			Net.users[id].y = self.window.height * 0.5 - self.characterTile.height * 0.5
+			Net.users[id].x = startPositions[startPositionIndex % 4 + 1].x * Map.tileWidth
+			Net.users[id].y = startPositions[startPositionIndex % 4 + 1].y * Map.tileHeight
 			Net.users[id].speed = 100
 			Net.users[id].bombCooldownTime = 1 -- time between player can play bombs
 			Net.users[id].bombCountdown = 0 -- time left until player can place new bomb
@@ -120,6 +131,7 @@ server.runLobby = function(self, clients, dt)
 			Net.users[id].isMoving = 0
 			Net.users[id].health = 100
 			Net.users[id].actions = {up = false, down = false, left = false, right = false, bomb = false}
+			startPositionIndex = startPositionIndex + 1
 		end
 		Map:create(self.gameMap.map, 32, 32, 24, 16, self.gameMap.seed)
 		self.gameIsRunning = true
