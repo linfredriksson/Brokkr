@@ -165,7 +165,7 @@ server.runMatch = function(self, clients, dt)
 			Net.users[id].bombCountdown = Net.users[id].bombCountdown - dt
 			if Net.users[id].bombCountdown < 0 then Net.users[id].bombCountdown = 0 end
 
-			self:explosionCheck(dt, id)
+			self:explosionCheck(dt, id, 0.99)  
 			self:moveCheck(dt, id)
 
 			Net.users[id].isMoving = 0
@@ -251,8 +251,8 @@ end
 
 --[[
 ]]
-server.explosionCheck = function(self, dt, id)
-	if explosion:playerCheck(Net.users[id]) then
+server.explosionCheck = function(self, dt, id, sublimit)
+	if explosion:playerCheck(Net.users[id], sublimit) then
 		Net.users[id].health =  Net.users[id].health - dt * 100 --stable dt is 0.01
 	end
 	if Net.users[id].health < 0 then

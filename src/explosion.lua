@@ -158,13 +158,13 @@ end
 	Checks if the player in an explosion tile
 	- player: player object with coordination values.
 ]]
-explosion.playerCheck = function(self, player)
+explosion.playerCheck = function(self, player, sublimit)
 	local match = false
-	local x = math.ceil(player.x / Map.tileWidth)
+	local x = math.ceil(player.x / Map.tileWidth - 0.5)
 	local y = math.ceil(player.y / Map.tileHeight)
 	for id = 1, #self.instances do
 		local e = self.instances[id]
-		if e.x == x and e.y == y then
+		if e.x == x and e.y == y and e.timer > sublimit then 
 			match = true
 			break
 		end
