@@ -123,7 +123,7 @@ server.runLobby = function(self, clients, dt)
 			Net:send({}, "print", "New game is starting", id)
 			Net:send(self.gameMap, "getMapName", "", id)
 			Net.users[id].x = startPositions[startPositionIndex % 4 + 1].x * Map.tileWidth
-			Net.users[id].y = startPositions[startPositionIndex % 4 + 1].y * Map.tileHeight
+			Net.users[id].y = startPositions[startPositionIndex % 4 + 1].y * Map.tileHeight - 10
 			Net.users[id].speed = 100
 			Net.users[id].bombCooldownTime = 1 -- time between player can play bombs
 			Net.users[id].bombCountdown = 0 -- time left until player can place new bomb
