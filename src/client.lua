@@ -76,7 +76,7 @@ client.registerCMD = function(self)
 					self.players[k] = {}
 					self.players[k].animation = self:generateCharacterAnimation(1, 0.6)
 					self.players[k].maxHealth = 100;
-					self.players[k].health = 100;
+					self.players[k].health = self.players[k].health;
 				end
 
 				-- player is still in the network
