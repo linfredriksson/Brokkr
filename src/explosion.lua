@@ -8,6 +8,11 @@ local explosion = {}
 explosion.initiate = function(self)
 	self.instances = {}
 	self.type = {}
+
+	explosion:addType(love.graphics.newImage("image/explosion_34FR.png"), 34, 2)
+	explosion:addType(love.graphics.newImage("image/explosion_47FR.png"), 47, 2)
+	explosion:addType(love.graphics.newImage("image/explosion_50FR.png"), 50, 2)
+	explosion:addType(love.graphics.newImage("image/explosion_52FR.png"), 52, 2)
 end
 
 --[[
@@ -164,7 +169,7 @@ explosion.playerCheck = function(self, player, sublimit)
 	local y = math.ceil(player.y / Map.tileHeight)
 	for id = 1, #self.instances do
 		local e = self.instances[id]
-		if e.x == x and e.y == y and e.timer > sublimit then 
+		if e.x == x and e.y == y and e.timer > sublimit then
 			match = true
 			break
 		end

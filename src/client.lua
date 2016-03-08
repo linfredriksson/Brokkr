@@ -30,10 +30,11 @@ client.load = function(self)
 
 	self:registerCMD()
 
-	self.sound = love.audio.newSource("sound/footstep01.ogg")
-
 	-- Set the default map
 	Map:create(self.defaultMapName, 32, 32, 24, 16, os.time())
+
+	bomb:initiate()
+	explosion:initiate()
 
 	self.player = {
 		x = self.window.width * 0.5 - self.characterTile.width * 0.5, y = self.window.height * 0.5 - self.characterTile.height * 0.5,
@@ -44,16 +45,6 @@ client.load = function(self)
 
 	self.characterTile.grid = anim8.newGrid(self.characterTile.width, self.characterTile.height, self.player.spritesheet:getWidth(), self.player.spritesheet:getHeight())
 	self.player.animation = self:generateCharacterAnimation(1, 0.6)
-
-	-- bomb/explosion addType should not be done here as it is used by both client and server
-	bomb:initiate()
-	bomb:addType("image/bomb1.png", 1, 2, 1.8)
-
-	explosion:initiate()
-	explosion:addType(love.graphics.newImage("image/explosion_34FR.png"), 34, 2)
-	explosion:addType(love.graphics.newImage("image/explosion_47FR.png"), 47, 2)
-	explosion:addType(love.graphics.newImage("image/explosion_50FR.png"), 50, 2)
-	explosion:addType(love.graphics.newImage("image/explosion_52FR.png"), 52, 2)
 end
 
 --[[
@@ -202,7 +193,7 @@ client.draw = function(self)
 			)
 		end
 	end
-	
+
 	for id = 1, #bomb.instances do
 		love.graphics.draw(
 			bomb.type[bomb.instances[id].bombTypeID].image,

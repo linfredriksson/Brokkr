@@ -14,16 +14,9 @@ server.load = function(self)
 	self.gameIsRunning = false
 
 	Map:create(self.lobbyMap.map, 32, 32, 24, 16, 0)
-
-	-- bomb/explosion addType should not be done here as it is used by both client and server
+	
 	bomb:initiate()
-	bomb:addType("image/bomb1.png", 1, 2, 1.8)
-
 	explosion:initiate()
-	explosion:addType(love.graphics.newImage("image/explosion_34FR.png"), 34, 2)
-	explosion:addType(love.graphics.newImage("image/explosion_47FR.png"), 47, 2)
-	explosion:addType(love.graphics.newImage("image/explosion_50FR.png"), 50, 2)
-	explosion:addType(love.graphics.newImage("image/explosion_52FR.png"), 52, 2)
 
 	Net:init("Server")
 	Net:connect(self.ip, self.port)
@@ -165,7 +158,7 @@ server.runMatch = function(self, clients, dt)
 			Net.users[id].bombCountdown = Net.users[id].bombCountdown - dt
 			if Net.users[id].bombCountdown < 0 then Net.users[id].bombCountdown = 0 end
 
-			self:explosionCheck(dt, id, 0.99)  
+			self:explosionCheck(dt, id, 0.99)
 			self:moveCheck(dt, id)
 
 			Net.users[id].isMoving = 0

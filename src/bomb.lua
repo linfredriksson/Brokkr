@@ -7,6 +7,8 @@ local bomb = {}
 bomb.initiate = function(self)
 	self.instances = {}
 	self.type = {}
+
+	bomb:addType("image/bomb1.png", 1, 2, 1.8)
 end
 
 --[[
