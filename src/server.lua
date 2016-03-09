@@ -105,6 +105,7 @@ server.runLobby = function(self, clients, dt)
 
 	-- if all players are in the start square on the map, then start a new match
 	if allPlayersInStartZone == true then
+		self.gameMap.seed = os.time()
 		local startPositions = {
 			{x = 1, y = 1},
 			{x = Map.width - 2, y = 1},
