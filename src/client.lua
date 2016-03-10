@@ -74,7 +74,7 @@ client.registerCMD = function(self)
 					self.players[k] = {}
 					self.players[k].animation = self:generateCharacterAnimation(1, 0.6)
 					self.players[k].maxHealth = 100;
-					self.players[k].health = self.players[k].health;
+					self.players[k].health = self.players[k].maxHealth;
 				end
 
 				-- player is still in the network
@@ -179,8 +179,6 @@ client.update = function(self, dt)
 		self.player.animation[self.player.direction]:gotoFrame(2)
 	end
 
-
-	self:explosionCheck(dt)
 	self:moveCheck(dt)
 
 	Net:update(dt)
@@ -274,14 +272,5 @@ client.moveCheck = function(self, dt)
 		if tiles[map[mapY1][mapX]].walkable and tiles[map[mapY2][mapX]].walkable then self.player.x = x end
 	end
 end
-
---[[
-]]
-client.explosionCheck = function(self, dt)
-	if explosion:playerCheck(self.player) then
-		self.player.health =  self.player.health - dt * 100 --stable dt is 0.01
-	end
-end
-
 
 return client
