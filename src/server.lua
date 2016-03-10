@@ -74,6 +74,7 @@ server.runLobby = function(self, clients, dt)
 		if data.greeted ~= true then
 			Net:send({}, "print", "Welcome to Brokkr! Now the server is up.", id)
 			Net:send(self.lobbyMap, "getMapName", "", id)
+			Net:send({name = id}, "setClientName", "", id)
 			data.greeted = true
 			Net.users[id].x = self.window.width * 0.5 - self.characterTile.width * 0.5
 			Net.users[id].y = self.window.height * 0.5 - 100

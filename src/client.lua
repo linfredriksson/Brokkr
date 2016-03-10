@@ -16,6 +16,7 @@ client.load = function(self)
 	self.charactersInTilesheet = 7
 	self.ip, self.port, self.maxPing = "127.0.0.1", 6789, 1000
 	self.defaultMapName = "random"
+	self.clientName = ""
 
 	-- Define keys for different actions
 	self.actions = {up = "up", down = "down", left = "left", right = "right", bomb = "space"}
@@ -50,6 +51,12 @@ end
 --[[
 ]]
 client.registerCMD = function(self)
+	Net:registerCMD("setClientName",
+		function(table, param, dt, id)
+			self.clientName = table.name
+		end
+	)
+
 	Net:registerCMD("getMapName",
 		function(table, param, dt, id)
 			Map:create(table.map, Map.tileWidth, Map.tileHeight, Map.width, Map.height, table.seed)
@@ -208,12 +215,14 @@ client.draw = function(self)
 	end
 
 	-- render health bars
-	love.graphics.setColor(255, 0, 0, 100)
 	for k, v in pairs(self.players) do
+		-- set opponents health bar to read, and players ownhealth bar to green
+		love.graphics.setColor(255, 0, 0, 100)
+		if k == self.clientName then love.graphics.setColor(0, 255, 0, 100) end
 		local healthScale = v.health / v.maxHealth
 		love.graphics.rectangle("fill", v.x + self.characterTile.width, v.y + self.characterTile.height * (1 - healthScale), 10, self.characterTile.height * healthScale)
 	end
-	love.graphics.setColor(255, 255, 255, 255)
+	love.graphics.setColor(255, 255, 255, 255) -- reset color to white
 
 	-- draw player
 	self.player.animation[self.player.direction]:draw( self.player.spritesheet, self.player.x, self.player.y)
