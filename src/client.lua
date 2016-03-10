@@ -222,9 +222,6 @@ client.draw = function(self)
 	end
 	love.graphics.setColor(255, 255, 255, 255) -- reset color to white
 
-	-- draw player
-	self.player.animation[self.player.direction]:draw( self.player.spritesheet, self.player.x, self.player.y)
-
 	-- draw explosions
 	for id = 1, #explosion.instances do
 		local e = explosion.instances[id]

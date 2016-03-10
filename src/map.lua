@@ -64,7 +64,6 @@ end
 	- inValue: new tile index for element.
 ]]
 map.setValue = function(self, inX, inY, inValue)
-	print("setValue")
 	if inX >= 1 and inX <= map.width and
 		inY >= 1 and inY <= map.height and
 		inValue >= 1 and inValue <= #map.tiles
