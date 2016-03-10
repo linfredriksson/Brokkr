@@ -2,7 +2,7 @@ local noise = require "noise"
 local map = {tileWidth = 0}
 
 map.create = function(self, mapName, tileWidth, tileHeight, mapWidth, mapHeight, seed)
-	local tileset = love.graphics.newImage("image/example_tiles_small.png")
+	local tileset = love.graphics.newImage("image/tiles.png")
 
 	map.name = mapName
 	map.width = mapWidth
@@ -17,15 +17,20 @@ map.create = function(self, mapName, tileWidth, tileHeight, mapWidth, mapHeight,
 	map.seed = seed or 0
 
 	map.tiles = {}
-	self:addTile(true, false, 0, 0)
-	self:addTile(true, false, 1, 0)
-	self:addTile(false, false, 0, 1)
-	self:addTile(false, true, 1, 1)
+	self:addTile(true, false, 0, 3)
+	self:addTile(true, false, 1, 3)
+	self:addTile(false, false, 2, 3)--wall
+	self:addTile(false, true, 3, 3)--wall
+	self:addTile(true, false, 0, 4)
+	self:addTile(true, false, 1, 4)
+	self:addTile(true, false, 2, 4)
+	self:addTile(true, false, 3, 4)
+	self:addTile(false, false, 4, 3)--wall
 
 	if map.name == "empty" then
 		map.values = map:emptyMap(3, 1)
 	elseif map.name == "lobby" then
-		map.values = map:lobbyMap(3, 1, 2)
+		map.values = map:lobbyMap(3, 1, 2, 2)
 	elseif map.name == "full" then
 		map.values = map:fullMap(3)
 	elseif map.name == "random" then
@@ -113,7 +118,7 @@ end
 	different texture to indicate location of map that players have to stand on
 	to start a new game round.
 ]]
-map.lobbyMap = function (self, wallID, floorID1, floorID2)
+map.lobbyMap = function (self, wallID, floorID1, floorID2, squareSize)
 	-- fill map with walls
 	local m = self:fullMap(wallID)
 	local halfHeight = map.height * 0.5
@@ -123,8 +128,6 @@ map.lobbyMap = function (self, wallID, floorID1, floorID2)
 	for row = 2, map.height - 1 do
 		for col = 2, map.width - 1 do
 			m[row][col] = floorID1
-
-			local squareSize = 2
 			if row > halfHeight - squareSize and row < halfHeight + squareSize + 1 and col > halfWidth - squareSize and col < halfWidth + squareSize + 1 then
 				m[row][col] = floorID2
 			end
@@ -161,8 +164,11 @@ map.randomMap = function(self)
 		{id = 4, probability = .25}
 	}
 	local floor = {
-		{id = 1, probability = 0.85},
-		{id = 2, probability = 0.15}
+		{id = 1, probability = 0.80},
+		{id = 5, probability = 0.05},
+		{id = 6, probability = 0.05},
+		{id = 7, probability = 0.05},
+		{id = 8, probability = 0.05},
 	}
 
 	local windowWidth = love.graphics.getWidth()
@@ -177,7 +183,7 @@ map.randomMap = function(self)
 			local posY = math.floor((y / map.height) * windowHeight)
 			m[y][x] = wall[1].id
 			if noise:turbulence(posX + 16, posY + 16, 64) < 0.9 then
-				m[y][x] = floor[1].id
+				m[y][x] = self:random(floor)
 			end
 		end
 	end
@@ -191,13 +197,10 @@ map.randomMap = function(self)
 			local posY = math.floor((y / map.height) * windowHeight)
 			if noise:turbulence(posX + 16, posY + 16, 64) < 0.9 then
 				m[y][x] = wall[2].id
-				if m[y][x] == floor[1].id then
-					m[y][x] = floor[2].id
-				end
 			end
 		end
 	end
-	m = self:clearStartAreas(m, self:random(floor), map.width, map.height)
+	m = self:clearStartAreas(m, 2, map.width, map.height)
 	m = self:destructableSimplePath(m, wall[2].id, 1)
 
 	return m
