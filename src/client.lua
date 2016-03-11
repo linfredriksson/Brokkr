@@ -199,8 +199,6 @@ client.update = function(self, dt)
 		self.player.animation[self.player.direction]:gotoFrame(2)
 	end
 
-	self:moveCheck(dt)
-
 	Net:update(dt)
 end
 
@@ -257,37 +255,6 @@ end
 ]]
 client.quit = function(self)
 	Net:disconnect()
-end
-
---[[
-]]
-client.moveCheck = function(self, dt)
-	local tiles, map = Map.tiles, Map.values
-	local tileWidth, tileHeight = self.characterTile.width * 0.5, self.characterTile.height
-	local absOffsetX, absOffsetY = 10, 3
-	local actions = self.actions
-
-	if love.keyboard.isDown(actions.up, actions.down) then
-		local dir = 1
-		self.player.direction = 1
-		if love.keyboard.isDown(actions.up) then self.player.direction = 2; dir = -1 end
-		local y = self.player.y + dir * self.player.speed * dt
-		local mapY = math.ceil((tileHeight + y + dir * absOffsetY) / Map.tileHeight)
-		local mapX1 = math.ceil((tileWidth + self.player.x + absOffsetX) / Map.tileWidth)
-		local mapX2 = math.ceil((tileWidth + self.player.x - absOffsetX) / Map.tileWidth)
-		if tiles[map[mapY][mapX1]].walkable and tiles[map[mapY][mapX2]].walkable then self.player.y = y end
-	end
-
-	if love.keyboard.isDown(actions.left, actions.right) then
-		local dir = 1
-		self.player.direction = 3
-		if love.keyboard.isDown(actions.left) then self.player.direction = 4; dir = -1 end
-		local x = self.player.x + dir * self.player.speed * dt
-		local mapX = math.ceil((tileWidth + x + dir * absOffsetX) / Map.tileWidth)
-		local mapY1 = math.ceil((tileHeight + self.player.y + absOffsetY) / Map.tileHeight)
-		local mapY2 = math.ceil((tileHeight + self.player.y - absOffsetY) / Map.tileHeight)
-		if tiles[map[mapY1][mapX]].walkable and tiles[map[mapY2][mapX]].walkable then self.player.x = x end
-	end
 end
 
 return client
