@@ -38,15 +38,9 @@ client.load = function(self)
 	bomb:initiate()
 	explosion:initiate()
 
-	self.player = {
-		x = self.window.width * 0.5 - self.characterTile.width * 0.5, y = self.window.height * 0.5 - self.characterTile.height * 0.5,
-		direction = 1, speed = 100, health = 100,
-		spritesheet = love.graphics.newImage("image/characters1.png"),
-		animation = {}
-	}
+	self.spritesheet = love.graphics.newImage("image/characters1.png")
 
-	self.characterTile.grid = anim8.newGrid(self.characterTile.width, self.characterTile.height, self.player.spritesheet:getWidth(), self.player.spritesheet:getHeight())
-	self.player.animation = self:generateCharacterAnimation(1, 0.6)
+	self.characterTile.grid = anim8.newGrid(self.characterTile.width, self.characterTile.height, self.spritesheet:getWidth(), self.spritesheet:getHeight())
 end
 
 --[[
@@ -155,16 +149,6 @@ client.keypressed = function(self, key)
 		love.event.quit()
 	end
 
---[[if self.actions.bomb == key then
-		local mapX = math.floor((self.player.x + self.characterTile.width * 0.5) / self.window.width * self.world.width)
-		local mapY = math.floor((self.player.y + self.characterTile.height) / self.window.height * self.world.height)
-		self.bombs[#self.bombs + 1] = {
-			bombType = self.bombType[1],
-			countDown = self.bombType[1].countDown,
-			x = mapX, y = mapY
-		}
-	end]]
-
 	if self.keys[key] ~= nil then
 		Net:send({}, "key_pressed", self.keys[key], Net.client.ip)
 	end
@@ -191,12 +175,6 @@ client.update = function(self, dt)
 		else
 			v.animation[tonumber(v.direction)]:gotoFrame(2)
 		end
-	end
-
-	if love.keyboard.isDown(self.actions.up, self.actions.down, self.actions.right, self.actions.left) then
-		self.player.animation[self.player.direction]:update(dt)
-	else
-		self.player.animation[self.player.direction]:gotoFrame(2)
 	end
 
 	Net:update(dt)
@@ -227,7 +205,7 @@ client.draw = function(self)
 
 	-- draw all players
 	for k, v in pairs(self.players) do
-		v.animation[tonumber(v.direction)]:draw(self.player.spritesheet, v.x, v.y)
+		v.animation[tonumber(v.direction)]:draw(self.spritesheet, v.x, v.y)
 	end
 
 	-- render health bars
