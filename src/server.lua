@@ -13,17 +13,21 @@ server.load = function(self)
 	self.lobbyMap = {map = "lobby", seed = 0}
 	self.gameIsRunning = false
 
+	self.clientMessageTimerValue = 0.1
+	self.clientMessageID = 0
+	self.clientMessages = {}
+
 	Map:create(self.lobbyMap.map, 32, 32, 24, 16, 0)
-	
+
 	bomb:initiate()
 	explosion:initiate()
 
 	Net:init("Server")
 	Net:connect(self.ip, self.port)
 	Net:setMaxPing(self.maxPing)
-
 	Net:registerCMD("key_pressed", function(table, param, id) self:keyRecieved(id, param, true) end)
 	Net:registerCMD("key_released", function(table, param, id) self:keyRecieved(id, param, false) end)
+	Net:registerCMD("message_recieved", function(table, param, id) self:removeClientMessage(table.id) end)
 end
 
 server.mousepressed = function(self, x, y, button)
@@ -64,6 +68,9 @@ server.fixedUpdate = function(self, dt)
 	for id, data in pairs(Net:connectedUsers()) do
 		Net:send(clients, "showLocation", "", id)
 	end
+
+	-- send new messages and resend old messages to clients
+	self:updateClientMessages(dt)
 end
 
 server.runLobby = function(self, clients, dt)
@@ -73,8 +80,8 @@ server.runLobby = function(self, clients, dt)
 	for id, data in pairs(Net:connectedUsers()) do
 		if data.greeted ~= true then
 			Net:send({}, "print", "Welcome to Brokkr! Now the server is up.", id)
-			Net:send(self.lobbyMap, "getMapName", "", id)
-			Net:send({name = id}, "setClientName", "", id)
+			self:newClientMessage({name = id}, "setClientName", id)
+			self:newClientMessage({map = self.lobbyMap.map, seed = self.lobbyMap.seed}, "getMapName", id)
 			data.greeted = true
 			Net.users[id].x = self.window.width * 0.5 - self.characterTile.width * 0.5
 			Net.users[id].y = self.window.height * 0.5 - 100
@@ -116,7 +123,7 @@ server.runLobby = function(self, clients, dt)
 		local startPositionIndex = 0
 		for id, data in pairs(Net:connectedUsers()) do
 			Net:send({}, "print", "New game is starting", id)
-			Net:send(self.gameMap, "getMapName", "", id)
+			self:newClientMessage({map = self.gameMap.map, seed = self.gameMap.seed}, "getMapName", id)
 			Net.users[id].x = startPositions[startPositionIndex % 4 + 1].x * Map.tileWidth
 			Net.users[id].y = startPositions[startPositionIndex % 4 + 1].y * Map.tileHeight - 10
 			Net.users[id].speed = 100
@@ -152,8 +159,9 @@ server.runMatch = function(self, clients, dt)
 					mapY = math.floor((Net.users[id].y + self.characterTile.height) / self.window.height * Map.height)
 				}
 				bomb:addInstance(1, location.mapX, location.mapY)
+				
 				for id, data in pairs(Net:connectedUsers()) do
-					Net:send(location, "addBomb", "", id)
+					self:newClientMessage({mapX = location.mapX, mapY = location.mapY}, "addBomb", id)
 				end
 			end
 
@@ -211,6 +219,42 @@ server.quit = function(self)
 		Net:send({}, "print", "The server has been closed.", id)
 	end
 	Net:disconnect()
+end
+
+--[[
+	Add a new client message.
+	- inTable: table to be sent to client.
+	- inCmd: name or client cmd.
+	- inClientAddress: address of the receiving client.
+]]
+server.newClientMessage = function(self, inTable, inCmd, inClientAddress)
+	self.clientMessageID = self.clientMessageID + 1
+	inTable.id = self.clientMessageID -- add message id to table, client use this when replying
+	self.clientMessages[self.clientMessageID] = {table = inTable, cmd = inCmd, clientAddress = inClientAddress, timer = 0}
+end
+
+--[[
+	Update client messages.
+	- dt: delta time in seconds.
+]]
+server.updateClientMessages = function(self, dt)
+	for id, message in pairs(self.clientMessages) do
+		message.timer = message.timer - dt
+		if message.timer < 0 then
+			message.timer = self.clientMessageTimerValue
+			Net:send(message.table, message.cmd, "", message.clientAddress)
+		end
+	end
+end
+
+--[[
+	Removes a client message.
+	- messageID: index of the message to be removed.
+]]
+server.removeClientMessage = function(self, messageID)
+	if self.clientMessages[messageID] ~= nil then
+		self.clientMessages[messageID] = nil
+	end
 end
 
 --[[

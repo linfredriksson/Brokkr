@@ -15,8 +15,9 @@ client.load = function(self)
 	self.characterTile = {grid = nil, width = 32, height = 32}
 	self.charactersInTilesheet = 7
 	self.ip, self.port, self.maxPing = "127.0.0.1", 6789, 1000
-	self.defaultMapName = "random"
+	self.defaultMapName = "lobby"
 	self.clientName = ""
+	self.serverMessages = {} -- contains all old important servermessages, used to not perform an action twise.
 
 	-- Define keys for different actions
 	self.actions = {up = "up", down = "down", left = "left", right = "right", bomb = "space"}
@@ -49,27 +50,47 @@ client.load = function(self)
 end
 
 --[[
+	Checks if a server message have been recieved before. If it have been recieved
+	before it returns 1 (true) else nil (false)
+	- messageID: index of the server message.
+]]
+client.checkIfOldServerMessage = function(self, messageID)
+	Net:send({id = messageID}, "message_recieved", "", Net.client.ip)
+	if self.serverMessages[messageID] ~= nil then return 1 end
+	return nil
+end
+
+--[[
+	Registers all the cmd's available in the client.
 ]]
 client.registerCMD = function(self)
 	Net:registerCMD("setClientName",
-		function(table, param, dt, id)
-			self.clientName = table.name
+		function(inTable, param, dt, id)
+			if self:checkIfOldServerMessage(inTable.id) then return end
+			self.clientName = inTable.name
 		end
 	)
 
 	Net:registerCMD("getMapName",
-		function(table, param, dt, id)
-			Map:create(table.map, Map.tileWidth, Map.tileHeight, Map.width, Map.height, table.seed)
+		function(inTable, param, dt, id)
+			if self:checkIfOldServerMessage(inTable.id) then return end
+			Map:create(inTable.map, Map.tileWidth, Map.tileHeight, Map.width, Map.height, inTable.seed)
+		end
+	)
+
+	Net:registerCMD("addBomb",
+		function(inTable, param, dt, id)
+			if self:checkIfOldServerMessage(inTable.id) then return end
+			bomb:addInstance(1, inTable.mapX, inTable.mapY)
 		end
 	)
 
 	Net:registerCMD("showLocation",
-		function(table, param, dt, id)
+		function(inTable, param, dt, id)
+			inTable["Param"] = nil
+			inTable["Command"] = nil
 
-			table["Param"] = nil
-			table["Command"] = nil
-
-			for k, v in pairs(table) do
+			for k, v in pairs(inTable) do
 				if self.players[k] == nil then -- initiate if not done already
 					self.players[k] = {}
 					self.players[k].animation = self:generateCharacterAnimation(1, 0.6)
@@ -82,6 +103,8 @@ client.registerCMD = function(self)
 				self.players[k].x, self.players[k].y, self.players[k].direction, self.players[k].isMoving, self.players[k].health = v:match("(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*)$")
 			end
 
+			-- check to see whick players are still in the game
+			-- delete players that are not
 			for k, v in pairs(self.players) do
 				if self.players[k].alive == false then
 					self.players[k] = nil
@@ -89,25 +112,22 @@ client.registerCMD = function(self)
 					self.players[k].alive = false
 				end
 			end
-
-		end
-	)
-
-	Net:registerCMD("addBomb",
-		function(table, param, dt, id)
-			bomb:addInstance(1, table.mapX, table.mapY)
 		end
 	)
 end
 
 --[[
-	Return a character animation containing a random characters.
+	Return a character animation containing a random character.
+	- duration: the duration of the animation.
 ]]
 client.generateRandomCharacterAnimation = function(self, duration)
 	return self:generateCharacterAnimation(math.random(self.charactersInTilesheet), duration)
 end
 
 --[[
+	Return a character animation containing a the character number "id".
+	- id: which character that is choosen, 1 to number of characters in character spritesheet.
+	- duration: the duration of the animation.
 ]]
 client.generateCharacterAnimation = function(self, id, duration)
 	local frameDuration = duration / 3
