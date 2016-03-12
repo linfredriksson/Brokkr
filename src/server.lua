@@ -12,6 +12,8 @@ server.load = function(self)
 	self.gameMap = {map = "random", seed = os.time()}
 	self.lobbyMap = {map = "lobby", seed = 0}
 	self.gameIsRunning = false
+	self.registeredClients = {}
+	self.characterID = 1
 
 	self.clientMessageTimerValue = 0.1
 	self.clientMessageID = 0
@@ -78,6 +80,11 @@ server.runLobby = function(self, clients, dt)
 	local numberOfPlayers = 0
 
 	for id, data in pairs(Net:connectedUsers()) do
+		if self.registeredClients[id] == nil then
+			self.registeredClients[id] = self.characterID
+			self.characterID = self.characterID % 7 + 1
+		end
+
 		if data.greeted ~= true then
 			Net:send({}, "print", "Welcome to Brokkr! Now the server is up.", id)
 			self:newClientMessage({name = id}, "setClientName", id)
@@ -92,6 +99,7 @@ server.runLobby = function(self, clients, dt)
 			Net.users[id].isMoving = 0
 			Net.users[id].health = 100
 			Net.users[id].actions = {up = false, down = false, left = false, right = false, bomb = false}
+			Net.users[id].characterID = self.registeredClients[id]
 		end
 
 		self:moveCheck(dt, id)
@@ -100,9 +108,9 @@ server.runLobby = function(self, clients, dt)
 			Net.users[id].isMoving = 1
 		end
 
-		clients[id] = Net.users[id].x .. "," .. Net.users[id].y .. "," .. Net.users[id].direction .. "," .. Net.users[id].isMoving .. "," .. Net.users[id].health
+		clients[id] = Net.users[id].x .. "," .. Net.users[id].y .. "," .. Net.users[id].direction .. "," .. Net.users[id].isMoving .. "," .. Net.users[id].health .. "," .. Net.users[id].characterID
 
-		-- ckeck to see if any players are outside of the start square on the map
+		-- check to see if any players are outside of the start square on the map
 		if Net.users[id].x < 304 or Net.users[id].x > 432 or Net.users[id].y < 160 or Net.users[id].y > 288 then
 			allPlayersInStartZone = false
 		end
@@ -176,7 +184,7 @@ server.runMatch = function(self, clients, dt)
 				Net.users[id].isMoving = 1
 			end
 
-			clients[id] = Net.users[id].x .. "," .. Net.users[id].y .. "," .. Net.users[id].direction .. "," .. Net.users[id].isMoving .. "," .. Net.users[id].health
+			clients[id] = Net.users[id].x .. "," .. Net.users[id].y .. "," .. Net.users[id].direction .. "," .. Net.users[id].isMoving .. "," .. Net.users[id].health .. "," .. Net.users[id].characterID
 		end
 	end
 

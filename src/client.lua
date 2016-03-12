@@ -85,16 +85,18 @@ client.registerCMD = function(self)
 			inTable["Command"] = nil
 
 			for k, v in pairs(inTable) do
+				local player = {}
+				player.x, player.y, player.direction, player.isMoving, player.health, player.characterID = v:match("(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*)$")
 				if self.players[k] == nil then -- initiate if not done already
 					self.players[k] = {}
-					self.players[k].animation = self:generateCharacterAnimation(1, 0.6)
+					self.players[k].animation = self:generateCharacterAnimation(player.characterID, 0.6)
 					self.players[k].maxHealth = 100;
 					self.players[k].health = self.players[k].maxHealth;
 				end
 
 				-- player is still in the network
 				self.players[k].alive = true
-				self.players[k].x, self.players[k].y, self.players[k].direction, self.players[k].isMoving, self.players[k].health = v:match("(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*)$")
+				self.players[k].x, self.players[k].y, self.players[k].direction, self.players[k].isMoving, self.players[k].health = player.x, player.y, player.direction, player.isMoving, player.health
 			end
 
 			-- check to see whick players are still in the game
