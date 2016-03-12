@@ -6,13 +6,19 @@ local explosion = {}
 	Initiate the explosion instances and type lists.
 ]]
 explosion.initiate = function(self)
-	self.instances = {}
+	self:resetInstances()
 	self.type = {}
-
 	explosion:addType(love.graphics.newImage("image/explosion_34FR.png"), 34, 2)
 	explosion:addType(love.graphics.newImage("image/explosion_47FR.png"), 47, 2)
 	explosion:addType(love.graphics.newImage("image/explosion_50FR.png"), 50, 2)
 	explosion:addType(love.graphics.newImage("image/explosion_52FR.png"), 52, 2)
+end
+
+--[[
+	Removes all explosion instances
+]]
+explosion.resetInstances = function(self)
+	self.instances = {}
 end
 
 --[[

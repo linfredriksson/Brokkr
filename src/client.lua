@@ -51,6 +51,7 @@ end
 client.checkIfOldServerMessage = function(self, messageID)
 	Net:send({id = messageID}, "message_recieved", "", Net.client.ip)
 	if self.serverMessages[messageID] ~= nil then return 1 end
+	self.serverMessages[messageID] = 1 -- save something in position messageID
 	return nil
 end
 
@@ -69,6 +70,8 @@ client.registerCMD = function(self)
 		function(inTable, param, dt, id)
 			if self:checkIfOldServerMessage(inTable.id) then return end
 			Map:create(inTable.map, Map.tileWidth, Map.tileHeight, Map.width, Map.height, inTable.seed)
+			explosion:resetInstances()
+			bomb:resetInstances()
 		end
 	)
 

@@ -198,16 +198,31 @@ server.runMatch = function(self, clients, dt)
 end
 
 server.draw = function(self)
-	--[[for y = 1, #Map.values  do
-		for x = 1, #Map.values[y] do
-			love.graphics.draw(
-				Map.tileset.image,
-				Map.tiles[Map.values[y][x] + 1].img,
-				(x - 1) * Map.tileWidth,
-				(y - 1) * Map.tileHeight
-			)
-		end
-	end]]
+	--for y = 1, #Map.values  do
+	--	for x = 1, #Map.values[y] do
+	--		love.graphics.draw(
+	--			Map.tileset.image,
+	--			Map.tiles[Map.values[y][x]].img,
+	--			(x - 1) * Map.tileWidth,
+	--			(y - 1) * Map.tileHeight
+	--		)
+	--	end
+	--end
+	--for id = 1, #bomb.instances do
+	--	love.graphics.draw(
+	--		bomb.type[bomb.instances[id].bombTypeID].image,
+	--		bomb.instances[id].x * Map.tileWidth,
+	--		bomb.instances[id].y * Map.tileHeight
+	--	)
+	--end
+	--for id = 1, #explosion.instances do
+	--	local e = explosion.instances[id]
+	--	e.animation:draw(
+	--		e.type.tileset,
+	--		(e.x + 0.5) * Map.tileWidth - e.type.tileWidth * 0.5,
+	--		(e.y + 0.5) * Map.tileHeight - e.type.tileHeight * 0.5
+	--	)
+	--end
 
 	love.graphics.print("SERVER", 10, 10)
 

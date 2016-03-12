@@ -5,10 +5,16 @@ local bomb = {}
 	Initiate the bomb instances and bomb type lists.
 ]]
 bomb.initiate = function(self)
-	self.instances = {}
+	self:resetInstances()
 	self.type = {}
-
 	bomb:addType("image/bomb.png", 1, 2, 1.8)
+end
+
+--[[
+	Removes all bomb instances.
+]]
+bomb.resetInstances = function(self)
+	self.instances = {}
 end
 
 --[[
