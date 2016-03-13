@@ -68,7 +68,7 @@ server.fixedUpdate = function(self, dt)
 	end
 
 	for id, data in pairs(Net:connectedUsers()) do
-		Net:send(clients, "showLocation", "", id)
+		Net:send(clients, "setPosition", "", id)
 	end
 
 	-- send new messages and resend old messages to clients
@@ -167,7 +167,7 @@ server.runMatch = function(self, clients, dt)
 					mapY = math.floor((Net.users[id].y + self.characterTile.height) / self.window.height * Map.height)
 				}
 				bomb:addInstance(1, location.mapX, location.mapY)
-				
+
 				for id, data in pairs(Net:connectedUsers()) do
 					self:newClientMessage({mapX = location.mapX, mapY = location.mapY}, "addBomb", id)
 				end

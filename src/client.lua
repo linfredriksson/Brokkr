@@ -8,6 +8,7 @@ local client = {}
 math.randomseed(os.time())
 
 --[[
+	Initialising function. Run when client starts.
 ]]
 client.load = function(self)
 	self.window = {width = love.graphics.getWidth(), height = love.graphics.getHeight()}
@@ -26,6 +27,7 @@ client.load = function(self)
 	self.keys = {}
 	for k, v in pairs(self.actions) do self.keys[v] = k end
 
+	-- setup networking and connect to server
 	Net:init("client")
 	Net:connect(self.ip, self.port)
 	Net:setMaxPing(self.maxPing)
@@ -35,11 +37,11 @@ client.load = function(self)
 	-- Set the default map
 	Map:create(self.defaultMapName, 32, 32, 24, 16, os.time())
 
+	-- initiate bomb and explosion classes
 	bomb:initiate()
 	explosion:initiate()
 
 	self.spritesheet = love.graphics.newImage("image/characters1.png")
-
 	self.characterTile.grid = anim8.newGrid(self.characterTile.width, self.characterTile.height, self.spritesheet:getWidth(), self.spritesheet:getHeight())
 end
 
@@ -59,6 +61,7 @@ end
 	Registers all the cmd's available in the client.
 ]]
 client.registerCMD = function(self)
+	-- Used by server to send the servers id for the client to the id.
 	Net:registerCMD("setClientName",
 		function(inTable, param, dt, id)
 			if self:checkIfOldServerMessage(inTable.id) then return end
@@ -66,6 +69,7 @@ client.registerCMD = function(self)
 		end
 	)
 
+	-- Used by server to tell the client which map to create.
 	Net:registerCMD("getMapName",
 		function(inTable, param, dt, id)
 			if self:checkIfOldServerMessage(inTable.id) then return end
@@ -75,6 +79,7 @@ client.registerCMD = function(self)
 		end
 	)
 
+	-- Used by server to tell clients to add a bomb instance.
 	Net:registerCMD("addBomb",
 		function(inTable, param, dt, id)
 			if self:checkIfOldServerMessage(inTable.id) then return end
@@ -82,7 +87,8 @@ client.registerCMD = function(self)
 		end
 	)
 
-	Net:registerCMD("showLocation",
+	-- Used by server to send all clients player position to clients.
+	Net:registerCMD("setPosition",
 		function(inTable, param, dt, id)
 			inTable["Param"] = nil
 			inTable["Command"] = nil
@@ -92,9 +98,15 @@ client.registerCMD = function(self)
 				player.x, player.y, player.direction, player.isMoving, player.health, player.characterID = v:match("(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*),(%-?[%d.e]*)$")
 				if self.players[k] == nil then -- initiate if not done already
 					self.players[k] = {}
-					self.players[k].animation = self:generateCharacterAnimation(player.characterID, 0.6)
+					self.players[k].characterID = 0
 					self.players[k].maxHealth = 100;
 					self.players[k].health = self.players[k].maxHealth;
+				end
+
+				-- update character sprite if player have changed sprite id
+				if self.players[k].characterID ~= player.characterID then
+					self.players[k].characterID = player.characterID
+					self.players[k].animation = self:generateCharacterAnimation(self.players[k].characterID, 0.6)
 				end
 
 				-- player is still in the network
@@ -142,11 +154,13 @@ client.generateCharacterAnimation = function(self, id, duration)
 end
 
 --[[
+	Mouse down function.
 ]]
 client.mousepressed = function(self, x, y, button)
 end
 
 --[[
+	Key down function.
 ]]
 client.keypressed = function(self, key)
 	if key == "escape" then
@@ -160,6 +174,7 @@ client.keypressed = function(self, key)
 end
 
 --[[
+	Key up function.
 ]]
 client.keyreleased = function(self, key)
 	if self.keys[key] ~= nil then
@@ -168,6 +183,7 @@ client.keyreleased = function(self, key)
 end
 
 --[[
+	Update function.
 ]]
 client.update = function(self, dt)
 	bomb:update(dt)
@@ -186,6 +202,7 @@ client.update = function(self, dt)
 end
 
 --[[
+	Draw function.
 ]]
 client.draw = function(self)
 	-- draw map
@@ -200,6 +217,7 @@ client.draw = function(self)
 		end
 	end
 
+	-- draw bomb instances
 	for id = 1, #bomb.instances do
 		love.graphics.draw(
 			bomb.type[bomb.instances[id].bombTypeID].image,
@@ -223,7 +241,7 @@ client.draw = function(self)
 	end
 	love.graphics.setColor(255, 255, 255, 255) -- reset color to white
 
-	-- draw explosions
+	-- draw explosion instances
 	for id = 1, #explosion.instances do
 		local e = explosion.instances[id]
 		e.animation:draw(
@@ -235,6 +253,7 @@ client.draw = function(self)
 end
 
 --[[
+	Quit function.
 ]]
 client.quit = function(self)
 	Net:disconnect()
