@@ -37,7 +37,7 @@ end
 
 --[[
 	Creates a bomb instance on the map square coordX, coordY.
-	- inBombTypeID: .
+	- inBombTypeID: id of bomb type.
 	- coordX: is the x coordinate on the game map.
 	- coordY: is the y coordinate on the game map.
 ]]

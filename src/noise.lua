@@ -15,6 +15,7 @@ end
 
 --[[
 	Generate noise values.
+	- seed: seed used to generate the noise.
 ]]
 noise.generate = function(self, seed)
 	-- initialize seed for random number generator

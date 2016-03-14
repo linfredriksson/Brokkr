@@ -18,15 +18,18 @@ server.load = function(self)
 	self.registeredClients = {}
 	self.characterID = 1
 
-	self.clientMessageTimerValue = 0.1
-	self.clientMessageID = 0
-	self.clientMessages = {}
+	self.clientMessageTimerValue = 0.1 -- how often in seconds messages will be resent untill server gets a reply
+	self.clientMessageID = 0 -- id of the last send message to a client
+	self.clientMessages = {} -- all messages that will be sent to clients
 
+	-- create the lobby map
 	Map:create(self.lobbyMap.map, 32, 32, 24, 16, 0)
 
+	-- create bomb/explosion types and initialize the bomb/explosion instance lists
 	bomb:initiate()
 	explosion:initiate()
 
+	-- start server and register all cmd
 	Net:init("Server")
 	Net:connect(self.ip, self.port)
 	Net:setMaxPing(self.maxPing)
@@ -37,6 +40,9 @@ end
 
 --[[
 	Mouse down function.
+	- x: x coordinate of mouse pointer.
+	- y: y coordinate of mouse pointer.
+	- button: which button on the mouse was pressed.
 ]]
 server.mousepressed = function(self, x, y, button)
 end
@@ -55,12 +61,14 @@ end
 
 --[[
 	Key down function.
+	- key: the keyboard key beeing pressed.
 ]]
 server.keypressed = function(self, key)
 end
 
 --[[
 	Key up function.
+	- key: the keyboard key beeing released.
 ]]
 server.keyreleased = function(self, key)
 end
@@ -94,6 +102,7 @@ server.fixedUpdate = function(self, dt)
 		self:runMatch(clients, dt)
 	end
 
+	-- update character positions in all connected clients.
 	for id, data in pairs(Net:connectedUsers()) do
 		Net:send(clients, "setPosition", "", id)
 	end
@@ -103,7 +112,9 @@ server.fixedUpdate = function(self, dt)
 end
 
 --[[
-	Lobby.
+	Lobby that is run when not in a active match.
+	- clients: list of client data that will be sent to all connected clients.
+	- dt: delta time, time in seconds since last update.
 ]]
 server.runLobby = function(self, clients, dt)
 	local allPlayersInStartZone = true
@@ -179,7 +190,9 @@ server.runLobby = function(self, clients, dt)
 end
 
 --[[
-	Match.
+	Run when server is running a active match.
+	- clients: list of client data that will be sent to all connected clients.
+	- dt: delta time, time in seconds since last update.
 ]]
 server.runMatch = function(self, clients, dt)
 	local allPlayersDead = true
@@ -231,7 +244,7 @@ server.runMatch = function(self, clients, dt)
 end
 
 --[[
-	Draw function.
+	Draw function. Mostly used for debugging.
 ]]
 server.draw = function(self)
 	--for y = 1, #Map.values  do
@@ -274,7 +287,7 @@ server.draw = function(self)
 end
 
 --[[
-	Quit function.
+	Quit function. Run when server is shutting down.
 ]]
 server.quit = function(self)
 	for id, data in pairs(Net:connectedUsers()) do
@@ -320,6 +333,8 @@ server.removeClientMessage = function(self, messageID)
 end
 
 --[[
+	- dt:
+	- id:
 ]]
 server.moveCheck = function(self, dt, id)
 	local tiles, map = Map.tiles, Map.values
@@ -351,6 +366,9 @@ server.moveCheck = function(self, dt, id)
 end
 
 --[[
+	- dt:
+	- id:
+	- sublimit:
 ]]
 server.explosionCheck = function(self, dt, id, sublimit)
 	if explosion:playerCheck(Net.users[id], sublimit) then

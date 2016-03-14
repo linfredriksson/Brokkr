@@ -15,7 +15,7 @@ explosion.initiate = function(self)
 end
 
 --[[
-	Removes all explosion instances
+	Removes all explosion instances.
 ]]
 explosion.resetInstances = function(self)
 	self.instances = {}
@@ -154,20 +154,15 @@ explosion.spread = function(self, instance, dt)
 				end
 			end
 
-			self:addInstance(
-				directions,
-				pos.x,
-				pos.y,
-				instance.spreadDistance - 1,
-				instance.spreadRate
-			)
+			self:addInstance(directions, pos.x, pos.y, instance.spreadDistance - 1, instance.spreadRate)
 		end
 	end
 end
 
 --[[
-	Checks if the player in an explosion tile
+	Checks if the player in an explosion tile.
 	- player: player object with coordination values.
+	- sublimit: player dont take damage if less than sublimit seconds are left of the instance animation.
 ]]
 explosion.playerCheck = function(self, player, sublimit)
 	local match = false

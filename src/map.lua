@@ -1,6 +1,15 @@
 local noise = require "noise"
 local map = {tileWidth = 0}
 
+--[[
+	Create a map.
+	- mapName: name of the type of map to create.
+	- tileWidth: the width in pixels of the tiles.
+	- tileHeight: the height in pixels of the tiles.
+	- mapWidth: the number of tiles the map should be wide.
+	- mapHeight: the number of tiles the map should be high.
+	- seed: seed used for random functions. Same seed always give same maps.
+]]
 map.create = function(self, mapName, tileWidth, tileHeight, mapWidth, mapHeight, seed)
 	local tileset = love.graphics.newImage("image/tiles.png")
 
@@ -42,6 +51,10 @@ end
 
 --[[
 	Add a tile.
+	- inWalkable: true/false depending on walkable or not. Walls should be false.
+	- inDestructable: true/false indicating if the tile is destructable or not.
+	- tileX: tile number in tile atlas.
+	- tileY: tile number in tile atlas.
 ]]
 map.addTile = function(self, inWalkable, inDestructable, tileX, tileY)
 	map.tiles[#map.tiles + 1] = {
@@ -61,7 +74,7 @@ end
 	Change value of a map element.
 	- inX: column id.
 	- inY: row id.
-	- inValue: new tile index for element.
+	- inValue: new tile id for element.
 ]]
 map.setValue = function(self, inX, inY, inValue)
 	if inX >= 1 and inX <= map.width and
@@ -97,6 +110,8 @@ end
 
 --[[
 	Returns a empty map with only walls around the border.
+	- wallID: id of wall tile.
+	- floorID: id of floor tile.
 ]]
 map.emptyMap = function (self, wallID, floorID)
 	-- fill map with walls
@@ -113,9 +128,13 @@ map.emptyMap = function (self, wallID, floorID)
 end
 
 --[[
-	Returns a empty map with walls around the border. Part of the floor have a
-	different texture to indicate location of map that players have to stand on
-	to start a new game round.
+	Returns a empty map with walls around the border. A center square of the floor
+	have a different tile to indicate location of map that all players have to
+	stand on to start a new game round.
+	- wallID: the id of the wall tile.
+	- floorID1: the id of the floor tile that will cover all of the floor.
+	- floorID2: the id of the floor tile that will be the center square.
+	- squareSize: the radius of the center square.
 ]]
 map.lobbyMap = function (self, wallID, floorID1, floorID2, squareSize)
 	-- fill map with walls
@@ -138,6 +157,7 @@ end
 
 --[[
 	Returns map filled with tiles of tileID.
+	- tileID: id of tile that will fill the map.
 ]]
 map.fullMap = function(self, tileID)
 	local m = {}
@@ -210,9 +230,7 @@ end
 	make sure paths exist between all starting areas.
 	- m: initial map
 	- wallID: tile id of wanted destructable wall
-	- tiles: list of existing tiles
-	- width: width of map
-	- height: height of map
+	- distanceToEdge: the distance between the map borders and the destructive path.
 ]]
 map.destructableSimplePath = function(self, m, wallID, distanceToEdge)
 	local bottom = map.height - distanceToEdge
@@ -235,6 +253,7 @@ end
 
 --[[
 	Puts floor times on the corners in a map, used to free starting areas from walls.
+	- m: the map that will be modified.
 	- floorID: the tile id of wanted floor.
 	- width: width of map.
 	- height: height of map.
@@ -243,14 +262,10 @@ map.clearStartAreas = function(self, m, floorID, width, height)
 	local cols = 3
 	for col = 1, cols do
 		for row = 1, col do
-			-- top left
-			m[cols - col + 2][row + 1] = floorID
-			-- top right
-			m[cols - col + 2][map.width - row] = floorID
-			-- bottom left
-			m[map.height - cols + col - 1][row + 1] = floorID
-			-- bottom right
-			m[map.height - cols + col - 1][map.width - row] = floorID
+			m[cols - col + 2][row + 1] = floorID -- top left
+			m[cols - col + 2][map.width - row] = floorID -- top right
+			m[map.height - cols + col - 1][row + 1] = floorID -- bottom left
+			m[map.height - cols + col - 1][map.width - row] = floorID -- bottom right
 		end
 	end
 

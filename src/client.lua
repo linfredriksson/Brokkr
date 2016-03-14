@@ -31,7 +31,6 @@ client.load = function(self)
 	Net:init("client")
 	Net:connect(self.ip, self.port)
 	Net:setMaxPing(self.maxPing)
-
 	self:registerCMD()
 
 	-- Set the default map
@@ -155,6 +154,9 @@ end
 
 --[[
 	Mouse down function.
+	- x: x coordinate of mouse pointer.
+	- y: y coordinate of mouse pointer.
+	- button: which button on the mouse was pressed.
 ]]
 client.mousepressed = function(self, x, y, button)
 end
