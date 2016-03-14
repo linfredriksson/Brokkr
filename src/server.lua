@@ -129,7 +129,7 @@ server.runLobby = function(self, clients, dt)
 		if data.greeted ~= true then
 			Net:send({}, "print", "Welcome to Brokkr! Now the server is up.", id)
 			self:newClientMessage({name = id}, "setClientName", id)
-			self:newClientMessage({map = self.lobbyMap.map, seed = self.lobbyMap.seed}, "getMapName", id)
+			self:newClientMessage({map = self.lobbyMap.map, seed = self.lobbyMap.seed}, "setMap", id)
 			data.greeted = true
 			Net.users[id].x = self.window.width * 0.5 - self.characterTile.width * 0.5
 			Net.users[id].y = self.window.height * 0.5 - 100
@@ -172,7 +172,7 @@ server.runLobby = function(self, clients, dt)
 		local startPositionIndex = 0
 		for id, data in pairs(Net:connectedUsers()) do
 			Net:send({}, "print", "New game is starting", id)
-			self:newClientMessage({map = self.gameMap.map, seed = self.gameMap.seed}, "getMapName", id)
+			self:newClientMessage({map = self.gameMap.map, seed = self.gameMap.seed}, "setMap", id)
 			Net.users[id].x = startPositions[startPositionIndex % 4 + 1].x * Map.tileWidth
 			Net.users[id].y = startPositions[startPositionIndex % 4 + 1].y * Map.tileHeight - 10
 			Net.users[id].speed = 100

@@ -21,7 +21,10 @@ client.load = function(self)
 	self.serverMessages = {} -- contains all old important servermessages, used to not perform an action twise.
 
 	-- Define keys for different actions
-	self.actions = {up = "up", down = "down", left = "left", right = "right", bomb = "space"}
+	-- up/down/left/right: Movement.
+	-- bomb: Drop bomb.
+	-- prev/next: Can be used to change character while in lobby.
+	self.actions = {up = "up", down = "down", left = "left", right = "right", bomb = "space", prev = "n", next = "m"}
 
 	-- Inverse of self.action, used to check if a pressed key is bound to a action
 	self.keys = {}
@@ -69,7 +72,7 @@ client.registerCMD = function(self)
 	)
 
 	-- Used by server to tell the client which map to create.
-	Net:registerCMD("getMapName",
+	Net:registerCMD("setMap",
 		function(inTable, param, dt, id)
 			if self:checkIfOldServerMessage(inTable.id) then return end
 			Map:create(inTable.map, Map.tileWidth, Map.tileHeight, Map.width, Map.height, inTable.seed)
