@@ -161,6 +161,7 @@ end
 
 --[[
 	Key down function.
+	- key: keyboard button beeing pressed.
 ]]
 client.keypressed = function(self, key)
 	if key == "escape" then
@@ -175,6 +176,7 @@ end
 
 --[[
 	Key up function.
+	- key: keyboard button beeing pressed.
 ]]
 client.keyreleased = function(self, key)
 	if self.keys[key] ~= nil then
@@ -184,6 +186,7 @@ end
 
 --[[
 	Update function.
+	- dt: delta time, time since last update.
 ]]
 client.update = function(self, dt)
 	bomb:update(dt)

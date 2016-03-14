@@ -4,6 +4,9 @@ local explosion = require "explosion"
 local bomb = require "bomb"
 local server = {}
 
+--[[
+	Initialising function. Run when server starts.
+]]
 server.load = function(self)
 	self.window = {width = love.graphics.getWidth(), height = love.graphics.getHeight()}
 	self.characterTile = {grid = nil, width = 32, height = 32}
@@ -32,21 +35,40 @@ server.load = function(self)
 	Net:registerCMD("message_recieved", function(table, param, id) self:removeClientMessage(table.id) end)
 end
 
+--[[
+	Mouse down function.
+]]
 server.mousepressed = function(self, x, y, button)
 end
 
+--[[
+	Runs when server recieves keys from clients.
+	- id: client id.
+	- key: the keyboard key sent by the client.
+	- value: true or false depending on if the key is pressed or released.
+]]
 server.keyRecieved = function(self, id, key, value)
 	if Net.users[id] ~= nil and Net.users[id].greeted == true and Net.users[id].actions[key] ~= nil then
 		Net.users[id].actions[key] = value
 	end
 end
 
+--[[
+	Key down function.
+]]
 server.keypressed = function(self, key)
 end
 
+--[[
+	Key up function.
+]]
 server.keyreleased = function(self, key)
 end
 
+--[[
+	Update function.
+	- dt: delta time, time since last update.
+]]
 server.update = function(self, dt)
 	self.totalDeltaTime = self.totalDeltaTime + dt
 	while self.totalDeltaTime > self.updateTimeStep do
@@ -55,6 +77,11 @@ server.update = function(self, dt)
 	end
 end
 
+--[[
+	Fixed update function. This function is used by the update function so that the
+	game updates in smaller interwalls, used to eliminate problems with heavy lag.
+	- dt: delta time, time since last update.
+]]
 server.fixedUpdate = function(self, dt)
 	local clients = {}
 	Net:update(dt)
@@ -75,6 +102,9 @@ server.fixedUpdate = function(self, dt)
 	self:updateClientMessages(dt)
 end
 
+--[[
+	Lobby.
+]]
 server.runLobby = function(self, clients, dt)
 	local allPlayersInStartZone = true
 	local numberOfPlayers = 0
@@ -148,6 +178,9 @@ server.runLobby = function(self, clients, dt)
 	end
 end
 
+--[[
+	Match.
+]]
 server.runMatch = function(self, clients, dt)
 	local allPlayersDead = true
 	bomb:update(dt)
@@ -197,6 +230,9 @@ server.runMatch = function(self, clients, dt)
 	end
 end
 
+--[[
+	Draw function.
+]]
 server.draw = function(self)
 	--for y = 1, #Map.values  do
 	--	for x = 1, #Map.values[y] do
@@ -237,6 +273,9 @@ server.draw = function(self)
 	end
 end
 
+--[[
+	Quit function.
+]]
 server.quit = function(self)
 	for id, data in pairs(Net:connectedUsers()) do
 		Net:send({}, "print", "The server has been closed.", id)
