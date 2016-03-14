@@ -13,11 +13,10 @@ math.randomseed(os.time())
 client.load = function(self)
 	self.window = {width = love.graphics.getWidth(), height = love.graphics.getHeight()}
 	self.players = {}
-	self.characterTile = {grid = nil, width = 32, height = 32}
-	self.charactersInTilesheet = 7
-	self.ip, self.port, self.maxPing = "127.0.0.1", 6789, 1000
+	self.characterTile = {imageName = "image/characters1.png", width = 32, height = 32, numberOfCharacters = 7}
+	self.serverInfo = {ip = "127.0.0.1", port = 6789, maxPing = 2000}
 	self.defaultMapName = "lobby"
-	self.clientName = ""
+	self.clientName = "" -- the name assigned to the client by the server in the form "clientIp:clientPort"
 	self.serverMessages = {} -- contains all old important servermessages, used to not perform an action twise.
 
 	-- Define keys for different actions
@@ -32,8 +31,8 @@ client.load = function(self)
 
 	-- setup networking and connect to server
 	Net:init("client")
-	Net:connect(self.ip, self.port)
-	Net:setMaxPing(self.maxPing)
+	Net:connect(self.serverInfo.ip, self.serverInfo.port)
+	Net:setMaxPing(self.serverInfo.maxPing)
 	self:registerCMD()
 
 	-- Set the default map
@@ -43,8 +42,8 @@ client.load = function(self)
 	bomb:initiate()
 	explosion:initiate()
 
-	self.spritesheet = love.graphics.newImage("image/characters1.png")
-	self.characterTile.grid = anim8.newGrid(self.characterTile.width, self.characterTile.height, self.spritesheet:getWidth(), self.spritesheet:getHeight())
+	self.characterTile.sprite = love.graphics.newImage(self.characterTile.imageName)
+	self.characterTile.grid = anim8.newGrid(self.characterTile.width, self.characterTile.height, self.characterTile.sprite:getWidth(), self.characterTile.sprite:getHeight())
 end
 
 --[[
@@ -134,7 +133,7 @@ end
 	- duration: the duration of the animation.
 ]]
 client.generateRandomCharacterAnimation = function(self, duration)
-	return self:generateCharacterAnimation(math.random(self.charactersInTilesheet), duration)
+	return self:generateCharacterAnimation(math.random(self.characterTile.numberOfCharacters), duration)
 end
 
 --[[
@@ -236,7 +235,7 @@ client.draw = function(self)
 
 	-- draw all players
 	for k, v in pairs(self.players) do
-		v.animation[tonumber(v.direction)]:draw(self.spritesheet, v.x, v.y)
+		v.animation[tonumber(v.direction)]:draw(self.characterTile.sprite, v.x, v.y)
 	end
 
 	-- render health bars

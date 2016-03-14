@@ -139,7 +139,7 @@ server.runLobby = function(self, clients, dt)
 			Net.users[id].direction = 1
 			Net.users[id].isMoving = 0
 			Net.users[id].health = 100
-			Net.users[id].actions = {up = false, down = false, left = false, right = false, bomb = false}
+			Net.users[id].actions = {up = false, down = false, left = false, right = false, bomb = false, prev = "n", next = "m"}
 			Net.users[id].characterID = self.registeredClients[id]
 		end
 
