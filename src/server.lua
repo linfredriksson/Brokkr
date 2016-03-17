@@ -1,4 +1,5 @@
 local Net = require "dependencies/Net"
+local Command = require "command"
 local Map = require "map"
 local explosion = require "explosion"
 local bomb = require "bomb"
@@ -18,10 +19,6 @@ server.load = function(self)
 	self.registeredClients = {}
 	self.characterID = 1
 
-	self.clientCommandTimerValue = 0.1 -- how often in seconds commands will be resent untill server gets a reply
-	self.clientCommandID = 0 -- id of the last send command to a client
-	self.clientCommands = {} -- all commands that will be sent to clients
-
 	-- create the lobby map
 	Map:create(self.lobbyMap.map, 32, 32, 24, 16, 0)
 
@@ -35,7 +32,8 @@ server.load = function(self)
 	Net:setMaxPing(self.maxPing)
 	Net:registerCMD("key_pressed", function(table, param, id) self:keyRecieved(id, param, true) end)
 	Net:registerCMD("key_released", function(table, param, id) self:keyRecieved(id, param, false) end)
-	Net:registerCMD("command_recieved", function(table, param, id) self:removeClientCommand(table.id) end)
+	Net:registerCMD("command_recieved", function(table, param, id) Command:remove(table.id) end)
+	Command:initiate(0.1)
 end
 
 --[[
@@ -108,7 +106,7 @@ server.fixedUpdate = function(self, dt)
 	end
 
 	-- send new commands and resend old commands to clients
-	self:updateClientCommands(dt)
+	Command:update(dt)
 end
 
 --[[
@@ -128,8 +126,8 @@ server.runLobby = function(self, clients, dt)
 
 		if data.greeted ~= true then
 			Net:send({}, "print", "Welcome to Brokkr! Now the server is up.", id)
-			self:newClientCommand({name = id}, "setClientName", id)
-			self:newClientCommand({map = self.lobbyMap.map, seed = self.lobbyMap.seed}, "setMap", id)
+			Command:add({name = id}, "setClientName", id)
+			Command:add({map = self.lobbyMap.map, seed = self.lobbyMap.seed}, "setMap", id)
 			data.greeted = true
 			Net.users[id].x = self.window.width * 0.5 - self.characterTile.width * 0.5
 			Net.users[id].y = self.window.height * 0.5 - 100
@@ -172,7 +170,7 @@ server.runLobby = function(self, clients, dt)
 		local startPositionIndex = 0
 		for id, data in pairs(Net:connectedUsers()) do
 			Net:send({}, "print", "New game is starting", id)
-			self:newClientCommand({map = self.gameMap.map, seed = self.gameMap.seed}, "setMap", id)
+			Command:add({map = self.gameMap.map, seed = self.gameMap.seed}, "setMap", id)
 			Net.users[id].x = startPositions[startPositionIndex % 4 + 1].x * Map.tileWidth
 			Net.users[id].y = startPositions[startPositionIndex % 4 + 1].y * Map.tileHeight - 10
 			Net.users[id].speed = 100
@@ -215,7 +213,7 @@ server.runMatch = function(self, clients, dt)
 				bomb:addInstance(1, location.mapX, location.mapY)
 
 				for id, data in pairs(Net:connectedUsers()) do
-					self:newClientCommand({mapX = location.mapX, mapY = location.mapY}, "addBomb", id)
+					Command:add({mapX = location.mapX, mapY = location.mapY}, "addBomb", id)
 				end
 			end
 
@@ -294,42 +292,6 @@ server.quit = function(self)
 		Net:send({}, "print", "The server has been closed.", id)
 	end
 	Net:disconnect()
-end
-
---[[
-	Add a new client command.
-	- inTable: table to be sent to client.
-	- inCmd: name or client cmd.
-	- inClientAddress: address of the receiving client.
-]]
-server.newClientCommand = function(self, inTable, inCmd, inClientAddress)
-	self.clientCommandID = self.clientCommandID + 1
-	inTable.id = self.clientCommandID -- add command id to table, client use this when replying
-	self.clientCommands[self.clientCommandID] = {table = inTable, cmd = inCmd, clientAddress = inClientAddress, timer = 0}
-end
-
---[[
-	Update client commands.
-	- dt: delta time in seconds.
-]]
-server.updateClientCommands = function(self, dt)
-	for id, Command in pairs(self.clientCommands) do
-		Command.timer = Command.timer - dt
-		if Command.timer < 0 then
-			Command.timer = self.clientCommandTimerValue
-			Net:send(Command.table, Command.cmd, "", Command.clientAddress)
-		end
-	end
-end
-
---[[
-	Removes a client command.
-	- commandID: index of the command to be removed.
-]]
-server.removeClientCommand = function(self, commandID)
-	if self.clientCommands[commandID] ~= nil then
-		self.clientCommands[commandID] = nil
-	end
 end
 
 --[[

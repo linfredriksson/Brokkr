@@ -1,5 +1,6 @@
 local anim8 = require "dependencies/anim8"
 local Net = require "dependencies/Net"
+local Command = require "command"
 local Map = require "map"
 local explosion = require "explosion"
 local bomb = require "bomb"
@@ -17,7 +18,6 @@ client.load = function(self)
 	self.serverInfo = {ip = "127.0.0.1", port = 6789, maxPing = 2000}
 	self.defaultMapName = "lobby"
 	self.clientName = "" -- the name assigned to the client by the server in the form "clientIp:clientPort"
-	self.serverCommands = {} -- contains all old server commands, used to not compute a command twise.
 
 	-- Define keys for different actions
 	-- up/down/left/right: Movement.
@@ -35,6 +35,8 @@ client.load = function(self)
 	Net:setMaxPing(self.serverInfo.maxPing)
 	self:registerCMD()
 
+	Command:initiate()
+
 	-- Set the default map
 	Map:create(self.defaultMapName, 32, 32, 24, 16, os.time())
 
@@ -47,25 +49,13 @@ client.load = function(self)
 end
 
 --[[
-	Checks if a server command have been recieved before. If it have been recieved
-	before it returns 1 (true) else nil (false)
-	- commandID: index of the server command.
-]]
-client.checkIfOldServerCommand = function(self, commandID)
-	Net:send({id = commandID}, "command_recieved", "", Net.client.ip)
-	if self.serverCommands[commandID] ~= nil then return 1 end
-	self.serverCommands[commandID] = 1 -- save something in position commandID
-	return nil
-end
-
---[[
 	Registers all the cmd's available in the client.
 ]]
 client.registerCMD = function(self)
 	-- Used by server to send the servers id for the client to the id.
 	Net:registerCMD("setClientName",
 		function(inTable, param, dt, id)
-			if self:checkIfOldServerCommand(inTable.id) then return end
+			if Command:exists(inTable.id) then return end
 			self.clientName = inTable.name
 		end
 	)
@@ -73,7 +63,7 @@ client.registerCMD = function(self)
 	-- Used by server to tell the client which map to create.
 	Net:registerCMD("setMap",
 		function(inTable, param, dt, id)
-			if self:checkIfOldServerCommand(inTable.id) then return end
+			if Command:exists(inTable.id) then return end
 			Map:create(inTable.map, Map.tileWidth, Map.tileHeight, Map.width, Map.height, inTable.seed)
 			explosion:resetInstances()
 			bomb:resetInstances()
@@ -83,7 +73,7 @@ client.registerCMD = function(self)
 	-- Used by server to tell clients to add a bomb instance.
 	Net:registerCMD("addBomb",
 		function(inTable, param, dt, id)
-			if self:checkIfOldServerCommand(inTable.id) then return end
+			if Command:exists(inTable.id) then return end
 			bomb:addInstance(1, inTable.mapX, inTable.mapY)
 		end
 	)
