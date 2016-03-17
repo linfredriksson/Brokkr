@@ -61,7 +61,7 @@ end
 
 --[[
 	Key down function.
-	- key: the keyboard key beeing pressed.
+	- key: the keyboard key being pressed.
 ]]
 server.keypressed = function(self, key)
 end
@@ -333,8 +333,9 @@ server.removeClientCommand = function(self, commandID)
 end
 
 --[[
-	- dt:
-	- id:
+	Checks the collision between the client's position and inaccessible tiles.
+	- dt: delta time in seconds.
+	- id: client id.
 ]]
 server.moveCheck = function(self, dt, id)
 	local tiles, map = Map.tiles, Map.values
@@ -366,9 +367,10 @@ server.moveCheck = function(self, dt, id)
 end
 
 --[[
-	- dt:
-	- id:
-	- sublimit:
+	Checks if the client in an explosion tile.
+	- dt: delta time in seconds.
+	- id: client id.
+	- sublimit: client doesn't take damage if less than sublimit seconds are left of the instance animation. 
 ]]
 server.explosionCheck = function(self, dt, id, sublimit)
 	if explosion:playerCheck(Net.users[id], sublimit) then

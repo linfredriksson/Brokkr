@@ -162,7 +162,7 @@ end
 --[[
 	Checks if the player in an explosion tile.
 	- player: player object with coordination values.
-	- sublimit: player dont take damage if less than sublimit seconds are left of the instance animation.
+	- sublimit: player doesn't take damage if less than sublimit seconds are left of the instance animation.
 ]]
 explosion.playerCheck = function(self, player, sublimit)
 	local match = false
