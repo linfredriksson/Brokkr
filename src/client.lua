@@ -17,7 +17,7 @@ client.load = function(self)
 	self.serverInfo = {ip = "127.0.0.1", port = 6789, maxPing = 2000}
 	self.defaultMapName = "lobby"
 	self.clientName = "" -- the name assigned to the client by the server in the form "clientIp:clientPort"
-	self.serverMessages = {} -- contains all old important servermessages, used to not perform an action twise.
+	self.serverCommands = {} -- contains all old server commands, used to not compute a command twise.
 
 	-- Define keys for different actions
 	-- up/down/left/right: Movement.
@@ -47,14 +47,14 @@ client.load = function(self)
 end
 
 --[[
-	Checks if a server message have been recieved before. If it have been recieved
+	Checks if a server command have been recieved before. If it have been recieved
 	before it returns 1 (true) else nil (false)
-	- messageID: index of the server message.
+	- commandID: index of the server command.
 ]]
-client.checkIfOldServerMessage = function(self, messageID)
-	Net:send({id = messageID}, "message_recieved", "", Net.client.ip)
-	if self.serverMessages[messageID] ~= nil then return 1 end
-	self.serverMessages[messageID] = 1 -- save something in position messageID
+client.checkIfOldServerCommand = function(self, commandID)
+	Net:send({id = commandID}, "command_recieved", "", Net.client.ip)
+	if self.serverCommands[commandID] ~= nil then return 1 end
+	self.serverCommands[commandID] = 1 -- save something in position commandID
 	return nil
 end
 
@@ -65,7 +65,7 @@ client.registerCMD = function(self)
 	-- Used by server to send the servers id for the client to the id.
 	Net:registerCMD("setClientName",
 		function(inTable, param, dt, id)
-			if self:checkIfOldServerMessage(inTable.id) then return end
+			if self:checkIfOldServerCommand(inTable.id) then return end
 			self.clientName = inTable.name
 		end
 	)
@@ -73,7 +73,7 @@ client.registerCMD = function(self)
 	-- Used by server to tell the client which map to create.
 	Net:registerCMD("setMap",
 		function(inTable, param, dt, id)
-			if self:checkIfOldServerMessage(inTable.id) then return end
+			if self:checkIfOldServerCommand(inTable.id) then return end
 			Map:create(inTable.map, Map.tileWidth, Map.tileHeight, Map.width, Map.height, inTable.seed)
 			explosion:resetInstances()
 			bomb:resetInstances()
@@ -83,7 +83,7 @@ client.registerCMD = function(self)
 	-- Used by server to tell clients to add a bomb instance.
 	Net:registerCMD("addBomb",
 		function(inTable, param, dt, id)
-			if self:checkIfOldServerMessage(inTable.id) then return end
+			if self:checkIfOldServerCommand(inTable.id) then return end
 			bomb:addInstance(1, inTable.mapX, inTable.mapY)
 		end
 	)
