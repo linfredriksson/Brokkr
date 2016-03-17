@@ -54,19 +54,20 @@ end
 server.keyRecieved = function(self, id, key, value)
 	if Net.users[id] ~= nil and Net.users[id].greeted == true and Net.users[id].actions[key] ~= nil then
 		Net.users[id].actions[key] = value
+		self:changeCharacterID(id)
 	end
 end
 
 --[[
 	Key down function.
-	- key: the keyboard key beeing pressed.
+	- key: the keyboard key being pressed.
 ]]
 server.keypressed = function(self, key)
 end
 
 --[[
 	Key up function.
-	- key: the keyboard key beeing released.
+	- key: the keyboard key being released.
 ]]
 server.keyreleased = function(self, key)
 end
@@ -137,7 +138,7 @@ server.runLobby = function(self, clients, dt)
 			Net.users[id].direction = 1
 			Net.users[id].isMoving = 0
 			Net.users[id].health = 100
-			Net.users[id].actions = {up = false, down = false, left = false, right = false, bomb = false, prev = "n", next = "m"}
+			Net.users[id].actions = {up = false, down = false, left = false, right = false, bomb = false, prev = false, next = false}
 			Net.users[id].characterID = self.registeredClients[id]
 		end
 
@@ -146,6 +147,7 @@ server.runLobby = function(self, clients, dt)
 		if Net.users[id].actions.up or Net.users[id].actions.down or Net.users[id].actions.left or Net.users[id].actions.right then
 			Net.users[id].isMoving = 1
 		end
+
 
 		clients[id] = Net.users[id].x .. "," .. Net.users[id].y .. "," .. Net.users[id].direction .. "," .. Net.users[id].isMoving .. "," .. Net.users[id].health .. "," .. Net.users[id].characterID
 
@@ -295,8 +297,9 @@ server.quit = function(self)
 end
 
 --[[
-	- dt:
-	- id:
+	Checks the collision between the client's position and inaccessible tiles.
+	- dt: delta time in seconds.
+	- id: client id.
 ]]
 server.moveCheck = function(self, dt, id)
 	local tiles, map = Map.tiles, Map.values
@@ -328,9 +331,10 @@ server.moveCheck = function(self, dt, id)
 end
 
 --[[
-	- dt:
-	- id:
-	- sublimit:
+	Checks if the client in an explosion tile.
+	- dt: delta time in seconds.
+	- id: client id.
+	- sublimit: client doesn't take damage if less than sublimit seconds are left of the instance animation. 
 ]]
 server.explosionCheck = function(self, dt, id, sublimit)
 	if explosion:playerCheck(Net.users[id], sublimit) then
@@ -339,6 +343,22 @@ server.explosionCheck = function(self, dt, id, sublimit)
 	if Net.users[id].health < 0 then
 		Net.users[id].greeted = false
 	end
+end
+
+--[[
+	Changes client's characther with keys n (next) and m (prev).
+	- id: client id.
+]]
+server.changeCharacterID = function(self, id)
+	if Net.users[id].actions.next then
+		Net.users[id].characterID = Net.users[id].characterID % 7 + 1
+	end
+
+	if Net.users[id].actions.prev then
+		Net.users[id].characterID = (Net.users[id].characterID + 5) % 7 + 1
+	end
+
+	self.registeredClients[id] = Net.users[id].characterID
 end
 
 return server

@@ -19,7 +19,7 @@ end
 
 --[[
 	Key down function.
-	- key: keyboard button beeing pressed.
+	- key: keyboard button being pressed.
 ]]
 function love.keypressed(key)
 	run:keypressed(key)
@@ -27,7 +27,7 @@ end
 
 --[[
 	Key up function.
-	- key: keyboard button beeing pressed.
+	- key: keyboard button being pressed.
 ]]
 function love.keyreleased(key)
 	run:keyreleased(key)

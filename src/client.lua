@@ -105,7 +105,7 @@ client.registerCMD = function(self)
 				self.players[k].x, self.players[k].y, self.players[k].direction, self.players[k].isMoving, self.players[k].health = player.x, player.y, player.direction, player.isMoving, player.health
 			end
 
-			-- check to see whick players are still in the game
+			-- check to see which players are still in the game
 			-- delete players that are not
 			for k, v in pairs(self.players) do
 				if self.players[k].alive == false then
@@ -127,8 +127,8 @@ client.generateRandomCharacterAnimation = function(self, duration)
 end
 
 --[[
-	Return a character animation containing a the character number "id".
-	- id: which character that is choosen, 1 to number of characters in character spritesheet.
+	Return a character animation containing the character number "id".
+	- id: which character that is chosen, 1 to number of characters in character spritesheet.
 	- duration: the duration of the animation.
 ]]
 client.generateCharacterAnimation = function(self, id, duration)
@@ -155,7 +155,7 @@ end
 
 --[[
 	Key down function.
-	- key: keyboard button beeing pressed.
+	- key: keyboard button being pressed.
 ]]
 client.keypressed = function(self, key)
 	if key == "escape" then
@@ -170,7 +170,7 @@ end
 
 --[[
 	Key up function.
-	- key: keyboard button beeing pressed.
+	- key: keyboard button being pressed.
 ]]
 client.keyreleased = function(self, key)
 	if self.keys[key] ~= nil then
