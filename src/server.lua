@@ -63,6 +63,9 @@ end
 	- key: the keyboard key being pressed.
 ]]
 server.keypressed = function(self, key)
+	if key == "escape" then
+		love.event.quit()
+	end
 end
 
 --[[
@@ -334,7 +337,7 @@ end
 	Checks if the client in an explosion tile.
 	- dt: delta time in seconds.
 	- id: client id.
-	- sublimit: client doesn't take damage if less than sublimit seconds are left of the instance animation. 
+	- sublimit: client doesn't take damage if less than sublimit seconds are left of the instance animation.
 ]]
 server.explosionCheck = function(self, dt, id, sublimit)
 	if explosion:playerCheck(Net.users[id], sublimit) then

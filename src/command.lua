@@ -3,10 +3,11 @@ local Command = {}
 
 --[[
 	Initiate commands.
+	- interval: how often in seconds commands will be resent to clients.
 ]]
 Command.initiate = function(self, interval)
 	self:deleteAllCommands()
-	self.resendInterval = interval -- how often in seconds commands will be resent untill server gets a reply
+	self.resendInterval = interval
 	self.lastCommandID = 0 -- id of the last send command to a client
 end
 
@@ -61,9 +62,7 @@ end
 	- id: index of the command to be removed.
 ]]
 Command.remove = function(self, id)
-	if self.commands[id] ~= nil then
-		self.commands[id] = nil
-	end
+	self.commands[id] = nil
 end
 
 return Command
