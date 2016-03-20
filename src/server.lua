@@ -17,7 +17,6 @@ server.load = function(self)
 	self.lobbyMap = {map = "lobby", seed = 0}
 	self.gameIsRunning = false
 	self.registeredClients = {}
-	self.characterID = 1
 
 	-- create the lobby map
 	Map:create(self.lobbyMap.map, 32, 32, 24, 16, 0)
@@ -54,7 +53,10 @@ end
 server.keyRecieved = function(self, id, key, value)
 	if Net.users[id] ~= nil and Net.users[id].greeted == true and Net.users[id].actions[key] ~= nil then
 		Net.users[id].actions[key] = value
-		self:changeCharacterID(id)
+	end
+
+	if Net.users[id] ~= nil and Net.users[id].greeted == true and (key == "next" or key == "prev") and value == true and self.gameIsRunning == false then
+		self:changeCharacterID(id, key)
 	end
 end
 
@@ -124,8 +126,7 @@ server.runLobby = function(self, clients, dt)
 
 	for id, data in pairs(Net:connectedUsers()) do
 		if self.registeredClients[id] == nil then
-			self.registeredClients[id] = self.characterID
-			self.characterID = self.characterID % 7 + 1
+			self.registeredClients[id] = math.random(7)
 		end
 
 		if data.greeted ~= true then
@@ -349,15 +350,16 @@ server.explosionCheck = function(self, dt, id, sublimit)
 end
 
 --[[
-	Changes client's characther with keys n (next) and m (prev).
+	Changes client's character with keys next and prev.
 	- id: client id.
+	- key: pressed key (next or prev)
 ]]
-server.changeCharacterID = function(self, id)
-	if Net.users[id].actions.next then
+server.changeCharacterID = function(self, id, key)
+	if key == "next" then
 		Net.users[id].characterID = Net.users[id].characterID % 7 + 1
 	end
 
-	if Net.users[id].actions.prev then
+	if key == "prev" then
 		Net.users[id].characterID = (Net.users[id].characterID + 5) % 7 + 1
 	end
 

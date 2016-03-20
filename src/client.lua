@@ -23,7 +23,7 @@ client.load = function(self)
 	-- up/down/left/right: Movement.
 	-- bomb: Drop bomb.
 	-- prev/next: Can be used to change character while in lobby.
-	self.actions = {up = "up", down = "down", left = "left", right = "right", bomb = "space", prev = "n", next = "m"}
+	self.actions = {up = "up", down = "down", left = "left", right = "right", bomb = "space", prev = "a", next = "s"}
 
 	-- Inverse of self.action, used to check if a pressed key is bound to a action
 	self.keys = {}
