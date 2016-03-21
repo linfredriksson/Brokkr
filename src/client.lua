@@ -4,6 +4,7 @@ local Command = require "command"
 local Map = require "map"
 local explosion = require "explosion"
 local bomb = require "bomb"
+local Item = require "item"
 local client = {}
 
 math.randomseed(os.time())
@@ -35,14 +36,13 @@ client.load = function(self)
 	Net:setMaxPing(self.serverInfo.maxPing)
 	self:registerCMD()
 
-	Command:initiate()
-
 	-- Set the default map
 	Map:create(self.defaultMapName, 32, 32, 24, 16, os.time())
 
-	-- initiate bomb and explosion classes
+	Command:initiate()
 	bomb:initiate()
 	explosion:initiate()
+	Item:initiate()
 
 	self.characterTile.sprite = love.graphics.newImage(self.characterTile.imageName)
 	self.characterTile.grid = anim8.newGrid(self.characterTile.width, self.characterTile.height, self.characterTile.sprite:getWidth(), self.characterTile.sprite:getHeight())
@@ -67,6 +67,7 @@ client.registerCMD = function(self)
 			Map:create(inTable.map, Map.tileWidth, Map.tileHeight, Map.width, Map.height, inTable.seed)
 			explosion:resetInstances()
 			bomb:resetInstances()
+			Item:resetInstances()
 		end
 	)
 
@@ -75,6 +76,22 @@ client.registerCMD = function(self)
 		function(inTable, param, dt, id)
 			if Command:exists(inTable.id) then return end
 			bomb:addInstance(1, inTable.mapX, inTable.mapY)
+		end
+	)
+
+	-- Used by server to add items on clients.
+	Net:registerCMD("addItem",
+		function(inTable, param, dt, id)
+			if Command:exists(inTable.id) then return end
+			Item:add(inTable.type, inTable.x, inTable.y)
+		end
+	)
+
+	-- Used by server to remove items on clients.
+	Net:registerCMD("removeItem",
+		function(inTable, param, dt, id)
+			if Command:exists(inTable.id) then return end
+			Item:remove(inTable.x, inTable.y)
 		end
 	)
 
@@ -90,8 +107,8 @@ client.registerCMD = function(self)
 				if self.players[k] == nil then -- initiate if not done already
 					self.players[k] = {}
 					self.players[k].characterID = 0
-					self.players[k].maxHealth = 100;
-					self.players[k].health = self.players[k].maxHealth;
+					self.players[k].maxHealth = 100
+					self.players[k].health = self.players[k].maxHealth
 				end
 
 				-- update character sprite if player have changed sprite id
@@ -213,6 +230,13 @@ client.draw = function(self)
 			)
 		end
 	end
+
+	-- draw item instances
+	for k, v in pairs(Item.instances) do
+		love.graphics.setColor(v.type.color.r, v.type.color.g, v.type.color.b, v.type.color.a)
+		love.graphics.rectangle("fill", v.x * Map.tileWidth, v.y * Map.tileHeight, Map.tileWidth, Map.tileHeight)
+	end
+	love.graphics.setColor(255, 255, 255, 255)
 
 	-- draw bomb instances
 	for id = 1, #bomb.instances do
