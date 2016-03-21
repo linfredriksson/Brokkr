@@ -3,6 +3,7 @@ local Command = require "command"
 local Map = require "map"
 local explosion = require "explosion"
 local bomb = require "bomb"
+local Item = require "item"
 local server = {}
 
 --[[
@@ -25,6 +26,7 @@ server.load = function(self)
 	-- create bomb/explosion types and initialize the bomb/explosion instance lists
 	bomb:initiate()
 	explosion:initiate()
+	Item:initiate()
 
 	-- start server and register all cmd
 	Net:init("Server")
@@ -151,7 +153,6 @@ server.runLobby = function(self, clients, dt)
 			Net.users[id].isMoving = 1
 		end
 
-
 		clients[id] = Net.users[id].x .. "," .. Net.users[id].y .. "," .. Net.users[id].direction .. "," .. Net.users[id].isMoving .. "," .. Net.users[id].health .. "," .. Net.users[id].characterID
 
 		-- check to see if any players are outside of the start square on the map
@@ -164,7 +165,7 @@ server.runLobby = function(self, clients, dt)
 	end
 
 	-- if all players are in the start square on the map, then start a new match
-	if allPlayersInStartZone == true then
+	if allPlayersInStartZone == true and numberOfPlayers > 0 then
 		self.gameMap.seed = os.time()
 		local startPositions = {
 			{x = 1, y = 1},
@@ -172,22 +173,33 @@ server.runLobby = function(self, clients, dt)
 			{x = Map.width - 2, y = Map.height - 2},
 			{x = 1, y = Map.height - 2}
 		}
+
 		local startPositionIndex = 0
 		for id, data in pairs(Net:connectedUsers()) do
 			Net:send({}, "print", "New game is starting", id)
 			Command:add({map = self.gameMap.map, seed = self.gameMap.seed}, "setMap", id)
 			Net.users[id].x = startPositions[startPositionIndex % 4 + 1].x * Map.tileWidth
 			Net.users[id].y = startPositions[startPositionIndex % 4 + 1].y * Map.tileHeight - 10
-			Net.users[id].speed = 100
-			Net.users[id].bombCooldownTime = 1 -- time between player can play bombs
+			Net.users[id].baseSpeed = 100
+			Net.users[id].speed = Net.users[id].baseSpeed
+			Net.users[id].baseBombCooldownTime = 1 -- time between player can play bombs
+			Net.users[id].bombCooldownTime = Net.users[id].baseBombCooldownTime
 			Net.users[id].bombCountdown = 0 -- time left until player can place new bomb
 			Net.users[id].direction = 1
 			Net.users[id].isMoving = 0
-			Net.users[id].health = 100
+			Net.users[id].maxHealth = 100
+			Net.users[id].health = Net.users[id].maxHealth
 			Net.users[id].actions = {up = false, down = false, left = false, right = false, bomb = false}
 			startPositionIndex = startPositionIndex + 1
 		end
+
+		-- create new map
 		Map:create(self.gameMap.map, 32, 32, 24, 16, self.gameMap.seed)
+
+		-- generate 10 items ontop of destructable walls
+		self:addItems(5, 3, 3)
+
+		-- set game to running
 		self.gameIsRunning = true
 	end
 end
@@ -227,6 +239,7 @@ server.runMatch = function(self, clients, dt)
 
 			self:explosionCheck(dt, id, 0.99)
 			self:moveCheck(dt, id)
+			self:itemCheck(Net.users[id])
 
 			Net.users[id].isMoving = 0
 			if Net.users[id].actions.up or Net.users[id].actions.down or Net.users[id].actions.left or Net.users[id].actions.right then
@@ -241,8 +254,9 @@ server.runMatch = function(self, clients, dt)
 	if allPlayersDead == true then
 		self.gameIsRunning = false
 		Map:create(self.lobbyMap.map, 32, 32, 24, 16, 0)
-		explosion.instances = {}
-		bomb.instances = {}
+		explosion:resetInstances()
+		bomb:resetInstances()
+		Item:resetInstances()
 	end
 end
 
@@ -260,6 +274,11 @@ server.draw = function(self)
 	--		)
 	--	end
 	--end
+	--for k, v in pairs(Item.instances) do
+	--	love.graphics.setColor(v.type.color.r, v.type.color.g, v.type.color.b, v.type.color.a)
+	--	love.graphics.rectangle("fill", v.x * Map.tileWidth, v.y * Map.tileHeight, Map.tileWidth, Map.tileHeight)
+	--end
+	--love.graphics.setColor(255, 255, 255, 255)
 	--for id = 1, #bomb.instances do
 	--	love.graphics.draw(
 	--		bomb.type[bomb.instances[id].bombTypeID].image,
@@ -362,6 +381,56 @@ server.changeCharacterID = function(self, id)
 	end
 
 	self.registeredClients[id] = Net.users[id].characterID
+end
+
+--[[
+	Checks if the client in an tile with a item.
+	- player: the client to check.
+]]
+server.itemCheck = function(self, player)
+	-- check if player is on top of any item
+	local item = Item:find(player.x, player.y)
+	-- if item found
+	if item ~= nil then
+		-- remove item from all clients
+		for id, data in pairs(Net:connectedUsers()) do
+			Command:add({x = item.x, y = item.y}, "removeItem", id)
+		end
+		-- apply item effect to player
+		item.type.callback(player)
+		-- remove item from server
+		Item:remove(item.x, item.y)
+	end
+end
+
+--[[
+	Add x number of items on destructable walls.
+	- numberOfHealth: number of health items to create.
+	- numberOfSpeed: number of speed items to create.
+	- numberOfReload: number of reload items to create.
+]]
+server.addItems = function(self, numberOfHealth, numberOfSpeed, numberOfReload)
+	for i = 1, numberOfHealth + numberOfSpeed + numberOfReload do
+		local type = "reload"
+		if i <= numberOfHealth + numberOfSpeed then type = "speed" end
+		if i <= numberOfHealth then type = "health" end
+
+		-- generate positions for items, only on destructable walls.
+		local available, x, y = nil, 0, 0
+		while available == nil do
+			x = math.floor((Map.width - 2) * math.random()) + 1
+			y = math.floor((Map.height - 2) * math.random()) + 1
+			if Map:isDestructable(x + 1, y + 1) ~= nil then
+				available = true
+			end
+		end
+
+		-- add item to server and send it to all connected clients
+		Item:add(type, x, y)
+		for id, data in pairs(Net:connectedUsers()) do
+			Command:add({type = type, x = x, y = y}, "addItem", id)
+		end
+	end
 end
 
 return server

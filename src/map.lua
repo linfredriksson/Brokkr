@@ -86,6 +86,34 @@ map.setValue = function(self, inX, inY, inValue)
 end
 
 --[[
+	Returns 1 if map tile at (inX, inY) is walkable, else nil.
+	- inX: tiles x coordinate in map.
+	- inY: tiles y coordinate in map.
+]]
+map.isWalkable = function(self, inX, inY)
+	if inX >= 1 and inX <= map.width and inY >= 1 and inY <= map.height then
+		if self.tiles[map.values[inY][inX]].walkable then
+			return 1
+		end
+	end
+	return nil
+end
+
+--[[
+	Returns 1 if map tile at (inX, inY) is destructable, else nil.
+	- inX: tiles x coordinate in map.
+	- inY: tiles y coordinate in map.
+]]
+map.isDestructable = function(self, inX, inY)
+	if inX >= 1 and inX <= map.width and inY >= 1 and inY <= map.height then
+		if self.tiles[map.values[inY][inX]].destructable then
+			return 1
+		end
+	end
+	return nil
+end
+
+--[[
 	Return a random id based on probabilities stored in table
 	- inTable: table of structure
 		{
