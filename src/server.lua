@@ -422,7 +422,7 @@ server.addItems = function(self, numberOfHealth, numberOfSpeed, numberOfReload)
 		while available == nil do
 			x = math.floor((Map.width - 2) * math.random()) + 1
 			y = math.floor((Map.height - 2) * math.random()) + 1
-			if Map:isDestructable(x + 1, y + 1) ~= nil then
+			if Map:isDestructable(x + 1, y + 1) ~= nil and Item:find(x * Map.tileWidth, y  * Map.tileHeight) == nil then
 				available = true
 			end
 		end
