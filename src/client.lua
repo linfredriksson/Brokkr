@@ -2,8 +2,8 @@ local anim8 = require "dependencies/anim8"
 local Net = require "dependencies/Net"
 local Command = require "command"
 local Map = require "map"
-local explosion = require "explosion"
-local bomb = require "bomb"
+local Explosion = require "explosion"
+local Bomb = require "bomb"
 local Item = require "item"
 local client = {}
 
@@ -40,8 +40,8 @@ client.load = function(self)
 	Map:create(self.defaultMapName, 32, 32, 24, 16, os.time())
 
 	Command:initiate()
-	bomb:initiate()
-	explosion:initiate()
+	Bomb:initiate()
+	Explosion:initiate()
 	Item:initiate()
 
 	self.characterTile.sprite = love.graphics.newImage(self.characterTile.imageName)
@@ -65,8 +65,8 @@ client.registerCMD = function(self)
 		function(inTable, param, dt, id)
 			if Command:exists(inTable.id) then return end
 			Map:create(inTable.map, Map.tileWidth, Map.tileHeight, Map.width, Map.height, inTable.seed)
-			explosion:resetInstances()
-			bomb:resetInstances()
+			Explosion:resetInstances()
+			Bomb:resetInstances()
 			Item:resetInstances()
 		end
 	)
@@ -75,7 +75,7 @@ client.registerCMD = function(self)
 	Net:registerCMD("addBomb",
 		function(inTable, param, dt, id)
 			if Command:exists(inTable.id) then return end
-			bomb:addInstance(1, inTable.mapX, inTable.mapY)
+			Bomb:addInstance(1, inTable.mapX, inTable.mapY)
 		end
 	)
 
@@ -200,9 +200,9 @@ end
 	- dt: delta time, time since last update.
 ]]
 client.update = function(self, dt)
-	bomb:update(dt)
-	explosion:updateAnimation(dt)
-	explosion:update(dt)
+	Bomb:update(dt)
+	Explosion:updateAnimation(dt)
+	Explosion:update(dt)
 
 	for k, v in pairs(self.players) do
 		if v.isMoving == "1" then
@@ -239,11 +239,11 @@ client.draw = function(self)
 	love.graphics.setColor(255, 255, 255, 255)
 
 	-- draw bomb instances
-	for id = 1, #bomb.instances do
+	for id = 1, #Bomb.instances do
 		love.graphics.draw(
-			bomb.type[bomb.instances[id].bombTypeID].image,
-			bomb.instances[id].x * Map.tileWidth,
-			bomb.instances[id].y * Map.tileHeight
+			Bomb.type[Bomb.instances[id].bombTypeID].image,
+			Bomb.instances[id].x * Map.tileWidth,
+			Bomb.instances[id].y * Map.tileHeight
 		)
 	end
 
@@ -263,8 +263,8 @@ client.draw = function(self)
 	love.graphics.setColor(255, 255, 255, 255) -- reset color to white
 
 	-- draw explosion instances
-	for id = 1, #explosion.instances do
-		local e = explosion.instances[id]
+	for id = 1, #Explosion.instances do
+		local e = Explosion.instances[id]
 		e.animation:draw(
 			e.type.tileset,
 			(e.x + 0.5) * Map.tileWidth - e.type.tileWidth * 0.5,

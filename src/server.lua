@@ -1,8 +1,8 @@
 local Net = require "dependencies/Net"
 local Command = require "command"
 local Map = require "map"
-local explosion = require "explosion"
-local bomb = require "bomb"
+local Explosion = require "explosion"
+local Bomb = require "bomb"
 local Item = require "item"
 local server = {}
 
@@ -23,8 +23,8 @@ server.load = function(self)
 	Map:create(self.lobbyMap.map, 32, 32, 24, 16, 0)
 
 	-- create bomb/explosion types and initialize the bomb/explosion instance lists
-	bomb:initiate()
-	explosion:initiate()
+	Bomb:initiate()
+	Explosion:initiate()
 	Item:initiate()
 
 	-- start server and register all cmd
@@ -212,8 +212,8 @@ end
 ]]
 server.runMatch = function(self, clients, dt)
 	local allPlayersDead = true
-	bomb:update(dt)
-	explosion:update(dt)
+	Bomb:update(dt)
+	Explosion:update(dt)
 
 	for id, data in pairs(Net:connectedUsers()) do
 		if data.greeted == true then
@@ -228,7 +228,7 @@ server.runMatch = function(self, clients, dt)
 					mapX = math.floor((Net.users[id].x + self.characterTile.width * 0.5) / self.window.width * Map.width),
 					mapY = math.floor((Net.users[id].y + self.characterTile.height) / self.window.height * Map.height)
 				}
-				bomb:addInstance(1, location.mapX, location.mapY)
+				Bomb:addInstance(1, location.mapX, location.mapY)
 
 				for id, data in pairs(Net:connectedUsers()) do
 					Command:add({mapX = location.mapX, mapY = location.mapY}, "addBomb", id)
@@ -255,8 +255,8 @@ server.runMatch = function(self, clients, dt)
 	if allPlayersDead == true then
 		self.gameIsRunning = false
 		Map:create(self.lobbyMap.map, 32, 32, 24, 16, 0)
-		explosion:resetInstances()
-		bomb:resetInstances()
+		Explosion:resetInstances()
+		Bomb:resetInstances()
 		Item:resetInstances()
 	end
 end
@@ -280,15 +280,15 @@ server.draw = function(self)
 	--	love.graphics.rectangle("fill", v.x * Map.tileWidth, v.y * Map.tileHeight, Map.tileWidth, Map.tileHeight)
 	--end
 	--love.graphics.setColor(255, 255, 255, 255)
-	--for id = 1, #bomb.instances do
+	--for id = 1, #Bomb.instances do
 	--	love.graphics.draw(
-	--		bomb.type[bomb.instances[id].bombTypeID].image,
-	--		bomb.instances[id].x * Map.tileWidth,
-	--		bomb.instances[id].y * Map.tileHeight
+	--		Bomb.type[Bomb.instances[id].bombTypeID].image,
+	--		Bomb.instances[id].x * Map.tileWidth,
+	--		Bomb.instances[id].y * Map.tileHeight
 	--	)
 	--end
-	--for id = 1, #explosion.instances do
-	--	local e = explosion.instances[id]
+	--for id = 1, #Explosion.instances do
+	--	local e = Explosion.instances[id]
 	--	e.animation:draw(
 	--		e.type.tileset,
 	--		(e.x + 0.5) * Map.tileWidth - e.type.tileWidth * 0.5,
@@ -360,7 +360,7 @@ end
 	- sublimit: client doesn't take damage if less than sublimit seconds are left of the instance animation.
 ]]
 server.explosionCheck = function(self, dt, id, sublimit)
-	if explosion:playerCheck(Net.users[id], sublimit) then
+	if Explosion:playerCheck(Net.users[id], sublimit) then
 		Net.users[id].health =  Net.users[id].health - dt * 100 --stable dt is 0.01
 	end
 	if Net.users[id].health < 0 then
