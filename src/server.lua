@@ -4,6 +4,7 @@ local Map = require "map"
 local Explosion = require "explosion"
 local Bomb = require "bomb"
 local Item = require "item"
+local Item = require "item"
 local server = {}
 
 --[[
@@ -25,6 +26,7 @@ server.load = function(self)
 	-- create bomb/explosion types and initialize the bomb/explosion instance lists
 	Bomb:initiate()
 	Explosion:initiate()
+	Item:initiate()
 	Item:initiate()
 
 	-- start server and register all cmd

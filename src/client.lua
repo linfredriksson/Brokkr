@@ -5,6 +5,7 @@ local Map = require "map"
 local Explosion = require "explosion"
 local Bomb = require "bomb"
 local Item = require "item"
+local Item = require "item"
 local client = {}
 
 math.randomseed(os.time())
@@ -43,6 +44,7 @@ client.load = function(self)
 	Bomb:initiate()
 	Explosion:initiate()
 	Item:initiate()
+	Item:initiate()
 
 	self.characterTile.sprite = love.graphics.newImage(self.characterTile.imageName)
 	self.characterTile.grid = anim8.newGrid(self.characterTile.width, self.characterTile.height, self.characterTile.sprite:getWidth(), self.characterTile.sprite:getHeight())
@@ -67,6 +69,7 @@ client.registerCMD = function(self)
 			Map:create(inTable.map, Map.tileWidth, Map.tileHeight, Map.width, Map.height, inTable.seed)
 			Explosion:resetInstances()
 			Bomb:resetInstances()
+			Item:resetInstances()
 			Item:resetInstances()
 		end
 	)
