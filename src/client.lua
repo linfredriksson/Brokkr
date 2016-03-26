@@ -239,12 +239,8 @@ client.draw = function(self)
 	love.graphics.setColor(255, 255, 255, 255)
 
 	-- draw bomb instances
-	for id = 1, #Bomb.instances do
-		love.graphics.draw(
-			Bomb.type[Bomb.instances[id].bombTypeID].image,
-			Bomb.instances[id].x * Map.tileWidth,
-			Bomb.instances[id].y * Map.tileHeight
-		)
+	for k, v in pairs(Bomb.instances) do
+		love.graphics.draw(Bomb.type[v.bombTypeID].image, v.x * Map.tileWidth, v.y * Map.tileHeight)
 	end
 
 	-- draw all players
@@ -254,21 +250,23 @@ client.draw = function(self)
 
 	-- render health bars
 	for k, v in pairs(self.players) do
-		-- set opponents health bar to read, and players ownhealth bar to green
+		-- set opponents health bar to read, and players own health bar to green
 		love.graphics.setColor(255, 0, 0, 100)
 		if k == self.clientName then love.graphics.setColor(0, 255, 0, 100) end
 		local healthScale = v.health / v.maxHealth
-		love.graphics.rectangle("fill", v.x + self.characterTile.width, v.y + self.characterTile.height * (1 - healthScale), 10, self.characterTile.height * healthScale)
+		love.graphics.rectangle("fill",
+			v.x + self.characterTile.width,
+			v.y + self.characterTile.height * (1 - healthScale),
+			10, self.characterTile.height * healthScale)
 	end
 	love.graphics.setColor(255, 255, 255, 255) -- reset color to white
 
 	-- draw explosion instances
-	for id = 1, #Explosion.instances do
-		local e = Explosion.instances[id]
-		e.animation:draw(
-			e.type.tileset,
-			(e.x + 0.5) * Map.tileWidth - e.type.tileWidth * 0.5,
-			(e.y + 0.5) * Map.tileHeight - e.type.tileHeight * 0.5
+	for k, v in pairs(Explosion.instances) do
+		v.animation:draw(
+			v.type.tileset,
+			(v.x + 0.5) * Map.tileWidth - v.type.tileWidth * 0.5,
+			(v.y + 0.5) * Map.tileHeight - v.type.tileHeight * 0.5
 		)
 	end
 end
