@@ -43,7 +43,7 @@ end
 ]]
 bomb.addInstance = function(self, inBombTypeID, coordX, coordY)
 	local instance = {
-		bombTypeID = inBombTypeID,
+		bombType = self.type[inBombTypeID],
 		countDown = self.type[inBombTypeID].countDown,
 		x = coordX,
 		y = coordY
@@ -66,11 +66,11 @@ bomb.update = function(self, dt)
 
 		if instance.countDown < 0.0 then
 			explosion:addInstance(
-				self.type[instance.bombTypeID].directions,
+				instance.bombType.directions,
 				instance.x,
 				instance.y,
-				self.type[instance.bombTypeID].spreadDistance,
-				self.type[instance.bombTypeID].spreadRate
+				instance.bombType.spreadDistance,
+				instance.bombType.spreadRate
 			)
 		else
 			self.instances[#self.instances + 1] = instance

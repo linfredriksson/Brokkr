@@ -282,7 +282,7 @@ server.draw = function(self)
 	--love.graphics.setColor(255, 255, 255, 255)
 	--for id = 1, #Bomb.instances do
 	--	love.graphics.draw(
-	--		Bomb.type[Bomb.instances[id].bombTypeID].image,
+	--		Bomb.instances[id].bombType.image,
 	--		Bomb.instances[id].x * Map.tileWidth,
 	--		Bomb.instances[id].y * Map.tileHeight
 	--	)

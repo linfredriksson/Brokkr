@@ -240,7 +240,7 @@ client.draw = function(self)
 
 	-- draw bomb instances
 	for k, v in pairs(Bomb.instances) do
-		love.graphics.draw(Bomb.type[v.bombTypeID].image, v.x * Map.tileWidth, v.y * Map.tileHeight)
+		love.graphics.draw(v.bombType.image, v.x * Map.tileWidth, v.y * Map.tileHeight)
 	end
 
 	-- draw all players
