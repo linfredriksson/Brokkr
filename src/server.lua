@@ -118,6 +118,64 @@ server.fixedUpdate = function(self, dt)
 end
 
 --[[
+	Draw function. Mostly used for debugging.
+]]
+server.draw = function(self)
+	--for y = 1, #Map.values  do
+	--	for x = 1, #Map.values[y] do
+	--		love.graphics.draw(
+	--			Map.tileset.image,
+	--			Map.tiles[Map.values[y][x]].img,
+	--			(x - 1) * Map.tileWidth,
+	--			(y - 1) * Map.tileHeight
+	--		)
+	--	end
+	--end
+	--for k, v in pairs(Item.instances) do
+	--	love.graphics.setColor(v.type.color.r, v.type.color.g, v.type.color.b, v.type.color.a)
+	--	love.graphics.rectangle("fill", v.x * Map.tileWidth, v.y * Map.tileHeight, Map.tileWidth, Map.tileHeight)
+	--end
+	--love.graphics.setColor(255, 255, 255, 255)
+	--for id = 1, #Bomb.instances do
+	--	love.graphics.draw(
+	--		Bomb.instances[id].bombType.image,
+	--		Bomb.instances[id].x * Map.tileWidth,
+	--		Bomb.instances[id].y * Map.tileHeight
+	--	)
+	--end
+	--for id = 1, #Explosion.instances do
+	--	local e = Explosion.instances[id]
+	--	e.animation:draw(
+	--		e.type.tileset,
+	--		(e.x + 0.5) * Map.tileWidth - e.type.tileWidth * 0.5,
+	--		(e.y + 0.5) * Map.tileHeight - e.type.tileHeight * 0.5
+	--	)
+	--end
+
+	love.graphics.print("SERVER", 10, 10)
+
+	local textY = 30
+	-- draw all players
+	for k, v in pairs(Net.users) do
+		if v.greeted == true then
+			love.graphics.rectangle("fill", v.x, v.y, self.characterTile.width, self.characterTile.height)
+			love.graphics.print(k .. ", " .. v.x .. ":" .. v.y, 10, textY)
+			textY = textY + 20
+		end
+	end
+end
+
+--[[
+	Quit function. Run when server is shutting down.
+]]
+server.quit = function(self)
+	for id, data in pairs(Net:connectedUsers()) do
+		Net:send({}, "print", "The server has been closed.", id)
+	end
+	Net:disconnect()
+end
+
+--[[
 	Lobby that is run when not in a active match.
 	- clients: list of client data that will be sent to all connected clients.
 	- dt: delta time, time in seconds since last update.
@@ -135,17 +193,9 @@ server.runLobby = function(self, clients, dt)
 			Net:send({}, "print", "Welcome to Brokkr! Now the server is up.", id)
 			Command:add({name = id}, "setClientName", id)
 			Command:add({map = self.lobbyMap.map, seed = self.lobbyMap.seed}, "setMap", id)
-			data.greeted = true
-			Net.users[id].x = self.window.width * 0.5 - self.characterTile.width * 0.5
-			Net.users[id].y = self.window.height * 0.5 - 100
-			Net.users[id].speed = 100
-			Net.users[id].bombCooldownTime = 1 -- time between player can play bombs
-			Net.users[id].bombCountdown = 0 -- time left until player can place new bomb
-			Net.users[id].direction = 1
-			Net.users[id].isMoving = 0
-			Net.users[id].health = 100
-			Net.users[id].actions = {up = false, down = false, left = false, right = false, bomb = false, prev = false, next = false}
-			Net.users[id].characterID = self.registeredClients[id]
+			local startX = self.window.width * 0.5 - self.characterTile.width * 0.5
+			local startY = self.window.height * 0.5 - 100
+			self:initClient(id, startX, startY, 100, 100, 1)
 		end
 
 		self:moveCheck(dt, id)
@@ -179,18 +229,9 @@ server.runLobby = function(self, clients, dt)
 		for id, data in pairs(Net:connectedUsers()) do
 			Net:send({}, "print", "New game is starting", id)
 			Command:add({map = self.gameMap.map, seed = self.gameMap.seed}, "setMap", id)
-			Net.users[id].x = startPositions[startPositionIndex % 4 + 1].x * Map.tileWidth
-			Net.users[id].y = startPositions[startPositionIndex % 4 + 1].y * Map.tileHeight - 10
-			Net.users[id].baseSpeed = 100
-			Net.users[id].speed = Net.users[id].baseSpeed
-			Net.users[id].baseBombCooldownTime = 1 -- time between player can play bombs
-			Net.users[id].bombCooldownTime = Net.users[id].baseBombCooldownTime
-			Net.users[id].bombCountdown = 0 -- time left until player can place new bomb
-			Net.users[id].direction = 1
-			Net.users[id].isMoving = 0
-			Net.users[id].maxHealth = 100
-			Net.users[id].health = Net.users[id].maxHealth
-			Net.users[id].actions = {up = false, down = false, left = false, right = false, bomb = false}
+			local startX = startPositions[startPositionIndex % 4 + 1].x * Map.tileWidth
+			local startY = startPositions[startPositionIndex % 4 + 1].y * Map.tileHeight - 10
+			self:initClient(id, startX, startY, 100, 100, 1)
 			startPositionIndex = startPositionIndex + 1
 		end
 
@@ -262,61 +303,29 @@ server.runMatch = function(self, clients, dt)
 end
 
 --[[
-	Draw function. Mostly used for debugging.
+	Initiate client data.
+	- id: id of client to initiate.
+	- inX: x start position of client character.
+	- inY: y start position of client character.
+	- inBaseSpeed: movement speed of character.
+	- inMaxHealth: starting health of character.
+	- inBombPlacementCooldown: time in seconds the client have to wait between placing bombs.
 ]]
-server.draw = function(self)
-	--for y = 1, #Map.values  do
-	--	for x = 1, #Map.values[y] do
-	--		love.graphics.draw(
-	--			Map.tileset.image,
-	--			Map.tiles[Map.values[y][x]].img,
-	--			(x - 1) * Map.tileWidth,
-	--			(y - 1) * Map.tileHeight
-	--		)
-	--	end
-	--end
-	--for k, v in pairs(Item.instances) do
-	--	love.graphics.setColor(v.type.color.r, v.type.color.g, v.type.color.b, v.type.color.a)
-	--	love.graphics.rectangle("fill", v.x * Map.tileWidth, v.y * Map.tileHeight, Map.tileWidth, Map.tileHeight)
-	--end
-	--love.graphics.setColor(255, 255, 255, 255)
-	--for id = 1, #Bomb.instances do
-	--	love.graphics.draw(
-	--		Bomb.instances[id].bombType.image,
-	--		Bomb.instances[id].x * Map.tileWidth,
-	--		Bomb.instances[id].y * Map.tileHeight
-	--	)
-	--end
-	--for id = 1, #Explosion.instances do
-	--	local e = Explosion.instances[id]
-	--	e.animation:draw(
-	--		e.type.tileset,
-	--		(e.x + 0.5) * Map.tileWidth - e.type.tileWidth * 0.5,
-	--		(e.y + 0.5) * Map.tileHeight - e.type.tileHeight * 0.5
-	--	)
-	--end
-
-	love.graphics.print("SERVER", 10, 10)
-
-	local textY = 30
-	-- draw all players
-	for k, v in pairs(Net.users) do
-		if v.greeted == true then
-			love.graphics.rectangle("fill", v.x, v.y, self.characterTile.width, self.characterTile.height)
-			love.graphics.print(k .. ", " .. v.x .. ":" .. v.y, 10, textY)
-			textY = textY + 20
-		end
-	end
-end
-
---[[
-	Quit function. Run when server is shutting down.
-]]
-server.quit = function(self)
-	for id, data in pairs(Net:connectedUsers()) do
-		Net:send({}, "print", "The server has been closed.", id)
-	end
-	Net:disconnect()
+server.initClient = function(self, id, inX, inY, inBaseSpeed, inMaxHealth, inBombPlacementCooldown)
+	Net.users[id].greeted = true
+	Net.users[id].x = inX
+	Net.users[id].y = inY
+	Net.users[id].baseSpeed = inBaseSpeed
+	Net.users[id].speed = Net.users[id].baseSpeed
+	Net.users[id].baseBombCooldownTime = inBombPlacementCooldown -- time between player can play bombs
+	Net.users[id].bombCooldownTime = Net.users[id].baseBombCooldownTime
+	Net.users[id].bombCountdown = 0 -- time left until player can place new bomb
+	Net.users[id].characterID = self.registeredClients[id]
+	Net.users[id].direction = 1
+	Net.users[id].isMoving = 0
+	Net.users[id].maxHealth = inMaxHealth
+	Net.users[id].health = Net.users[id].maxHealth
+	Net.users[id].actions = {up = false, down = false, left = false, right = false, bomb = false, prev = false, next = false}
 end
 
 --[[
