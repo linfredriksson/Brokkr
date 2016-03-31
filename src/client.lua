@@ -1,3 +1,4 @@
+local Global = require "global"
 local anim8 = require "dependencies/anim8"
 local Net = require "dependencies/Net"
 local Command = require "command"
@@ -13,39 +14,30 @@ math.randomseed(os.time())
 	Initialising function. Run when client starts.
 ]]
 client.load = function(self)
-	self.window = {width = love.graphics.getWidth(), height = love.graphics.getHeight()}
-	self.players = {}
-	self.characterTile = {imageName = "image/characters1.png", width = 32, height = 32, numberOfCharacters = 7}
-	self.serverInfo = {ip = "127.0.0.1", port = 6789, maxPing = 2000}
-	self.defaultMapName = "lobby"
 	self.clientName = "" -- the name assigned to the client by the server in the form "clientIp:clientPort"
-
-	-- Define keys for different actions
-	-- up/down/left/right: Movement.
-	-- bomb: Drop bomb.
-	-- prev/next: Can be used to change character while in lobby.
-	self.actions = {up = "up", down = "down", left = "left", right = "right", bomb = "space", prev = "a", next = "s"}
-
-	-- Inverse of self.action, used to check if a pressed key is bound to a action
-	self.keys = {}
-	for k, v in pairs(self.actions) do self.keys[v] = k end
+	self.players = {}
 
 	-- setup networking and connect to server
 	Net:init("client")
-	Net:connect(self.serverInfo.ip, self.serverInfo.port)
-	Net:setMaxPing(self.serverInfo.maxPing)
+	Net:connect(Global.ip, Global.port)
+	Net:setMaxPing(Global.maxPingClient)
 	self:registerCMD()
+	Item:initiate()
 
 	-- Set the default map
-	Map:create(self.defaultMapName, 32, 32, 24, 16, os.time())
+	Map:create(Global.map.tileImageName, Global.lobbyMap.map, Global.map.tileWidth, Global.map.tileHeight, Global.map.mapWidth, Global.map.mapHeight, Global.lobbyMap.seed)
 
+	-- create bomb/explosion/item types and initialize the bomb/explosion/item instance lists
 	Command:initiate()
 	Bomb:initiate()
 	Explosion:initiate()
-	Item:initiate()
 
-	self.characterTile.sprite = love.graphics.newImage(self.characterTile.imageName)
-	self.characterTile.grid = anim8.newGrid(self.characterTile.width, self.characterTile.height, self.characterTile.sprite:getWidth(), self.characterTile.sprite:getHeight())
+	Global.characterTile.sprite = love.graphics.newImage(Global.characterTile.imageName)
+	Global.characterTile.grid = anim8.newGrid(Global.characterTile.width, Global.characterTile.height, Global.characterTile.sprite:getWidth(), Global.characterTile.sprite:getHeight())
+
+	-- Inverse of Global.actions, used to check if a pressed key is bound to a action
+	self.keys = {}
+	for k, v in pairs(Global.actions) do self.keys[v] = k end
 end
 
 --[[
@@ -64,7 +56,9 @@ client.registerCMD = function(self)
 	Net:registerCMD("setMap",
 		function(inTable, param, dt, id)
 			if Command:exists(inTable.id) then return end
-			Map:create(inTable.map, Map.tileWidth, Map.tileHeight, Map.width, Map.height, inTable.seed)
+			Global.gameMap.map = inTable.map
+			Global.gameMap.seed = inTable.seed
+			Map:create(Global.map.tileImageName, Global.gameMap.map, Global.map.tileWidth, Global.map.tileHeight, Global.map.mapWidth, Global.map.mapHeight, Global.gameMap.seed)
 			Explosion:resetInstances()
 			Bomb:resetInstances()
 			Item:resetInstances()
@@ -140,7 +134,7 @@ end
 	- duration: the duration of the animation.
 ]]
 client.generateRandomCharacterAnimation = function(self, duration)
-	return self:generateCharacterAnimation(math.random(self.characterTile.numberOfCharacters), duration)
+	return self:generateCharacterAnimation(math.random(Global.characterTile.numberOfCharacters), duration)
 end
 
 --[[
@@ -154,10 +148,10 @@ client.generateCharacterAnimation = function(self, id, duration)
 	local col = (id - 1) % 4
 	col = 1 + col * 3 .. "-" .. 3 + col * 3
 	return {
-		anim8.newAnimation(self.characterTile.grid(col, row + 1), frameDuration),
-		anim8.newAnimation(self.characterTile.grid(col, row + 4), frameDuration),
-		anim8.newAnimation(self.characterTile.grid(col, row + 3), frameDuration),
-		anim8.newAnimation(self.characterTile.grid(col, row + 2), frameDuration)
+		anim8.newAnimation(Global.characterTile.grid(col, row + 1), frameDuration),
+		anim8.newAnimation(Global.characterTile.grid(col, row + 4), frameDuration),
+		anim8.newAnimation(Global.characterTile.grid(col, row + 3), frameDuration),
+		anim8.newAnimation(Global.characterTile.grid(col, row + 2), frameDuration)
 	}
 end
 
@@ -245,7 +239,7 @@ client.draw = function(self)
 
 	-- draw all players
 	for k, v in pairs(self.players) do
-		v.animation[tonumber(v.direction)]:draw(self.characterTile.sprite, v.x, v.y)
+		v.animation[tonumber(v.direction)]:draw(Global.characterTile.sprite, v.x, v.y)
 	end
 
 	-- render health bars
@@ -255,9 +249,9 @@ client.draw = function(self)
 		if k == self.clientName then love.graphics.setColor(0, 255, 0, 100) end
 		local healthScale = v.health / v.maxHealth
 		love.graphics.rectangle("fill",
-			v.x + self.characterTile.width,
-			v.y + self.characterTile.height * (1 - healthScale),
-			10, self.characterTile.height * healthScale)
+			v.x + Global.characterTile.width,
+			v.y + Global.characterTile.height * (1 - healthScale),
+			10, Global.characterTile.height * healthScale)
 	end
 	love.graphics.setColor(255, 255, 255, 255) -- reset color to white
 

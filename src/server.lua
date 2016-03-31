@@ -1,3 +1,4 @@
+local Global = require "global"
 local Net = require "dependencies/Net"
 local Command = require "command"
 local Map = require "map"
@@ -10,31 +11,27 @@ local server = {}
 	Initialising function. Run when server starts.
 ]]
 server.load = function(self)
-	self.window = {width = love.graphics.getWidth(), height = love.graphics.getHeight()}
-	self.characterTile = {grid = nil, width = 32, height = 32}
-	self.ip, self.port, self.maxPing = nil, 6789, 3000
 	self.totalDeltaTime, self.updateTimeStep = 0, 0.01
-	self.gameMap = {map = "random", seed = os.time()}
-	self.lobbyMap = {map = "lobby", seed = 0}
+	self.commandResendInterval = 0.1
 	self.gameIsRunning = false
 	self.registeredClients = {}
 
 	-- create the lobby map
-	Map:create(self.lobbyMap.map, 32, 32, 24, 16, 0)
+	Map:create(Global.map.tileImageName, Global.lobbyMap.map, Global.map.tileWidth, Global.map.tileHeight, Global.map.mapWidth, Global.map.mapHeight, Global.lobbyMap.seed)
 
-	-- create bomb/explosion types and initialize the bomb/explosion instance lists
+	-- create bomb/explosion/item types and initialize the bomb/explosion/item instance lists
 	Bomb:initiate()
 	Explosion:initiate()
 	Item:initiate()
 
 	-- start server and register all cmd
 	Net:init("Server")
-	Net:connect(self.ip, self.port)
-	Net:setMaxPing(self.maxPing)
+	Net:connect(nil, Global.port)
+	Net:setMaxPing(Global.maxPingServer)
 	Net:registerCMD("key_pressed", function(table, param, id) self:keyRecieved(id, param, true) end)
 	Net:registerCMD("key_released", function(table, param, id) self:keyRecieved(id, param, false) end)
 	Net:registerCMD("command_recieved", function(table, param, id) Command:remove(table.id) end)
-	Command:initiate(0.1)
+	Command:initiate(self.commandResendInterval)
 end
 
 --[[
@@ -158,8 +155,8 @@ server.draw = function(self)
 	-- draw all players
 	for k, v in pairs(Net.users) do
 		if v.greeted == true then
-			love.graphics.rectangle("fill", v.x, v.y, self.characterTile.width, self.characterTile.height)
-			love.graphics.print(k .. ", " .. v.x .. ":" .. v.y, 10, textY)
+			love.graphics.rectangle("fill", v.x, v.y, Global.characterTile.width, Global.characterTile.height)
+			love.graphics.print(k .. ", pos: (" .. v.x .. ":" .. v.y .. "), health: " .. v.health, 10, textY)
 			textY = textY + 20
 		end
 	end
@@ -192,9 +189,9 @@ server.runLobby = function(self, clients, dt)
 		if data.greeted ~= true then
 			Net:send({}, "print", "Welcome to Brokkr! Now the server is up.", id)
 			Command:add({name = id}, "setClientName", id)
-			Command:add({map = self.lobbyMap.map, seed = self.lobbyMap.seed}, "setMap", id)
-			local startX = self.window.width * 0.5 - self.characterTile.width * 0.5
-			local startY = self.window.height * 0.5 - 100
+			Command:add({map = Global.lobbyMap.map, seed = Global.lobbyMap.seed}, "setMap", id)
+			local startX = Global.window.width * 0.5 - Global.characterTile.width * 0.5
+			local startY = Global.window.height * 0.5 - 100
 			self:initClient(id, startX, startY, 100, 100, 1)
 		end
 
@@ -217,7 +214,7 @@ server.runLobby = function(self, clients, dt)
 
 	-- if all players are in the start square on the map, then start a new match
 	if allPlayersInStartZone == true and numberOfPlayers > 0 then
-		self.gameMap.seed = os.time()
+		Global.gameMap.seed = os.time()
 		local startPositions = {
 			{x = 1, y = 1},
 			{x = Map.width - 2, y = 1},
@@ -228,7 +225,7 @@ server.runLobby = function(self, clients, dt)
 		local startPositionIndex = 0
 		for id, data in pairs(Net:connectedUsers()) do
 			Net:send({}, "print", "New game is starting", id)
-			Command:add({map = self.gameMap.map, seed = self.gameMap.seed}, "setMap", id)
+			Command:add({map = Global.gameMap.map, seed = Global.gameMap.seed}, "setMap", id)
 			local startX = startPositions[startPositionIndex % 4 + 1].x * Map.tileWidth
 			local startY = startPositions[startPositionIndex % 4 + 1].y * Map.tileHeight - 10
 			self:initClient(id, startX, startY, 100, 100, 1)
@@ -236,7 +233,7 @@ server.runLobby = function(self, clients, dt)
 		end
 
 		-- create new map
-		Map:create(self.gameMap.map, 32, 32, 24, 16, self.gameMap.seed)
+		Map:create(Global.map.tileImageName, Global.gameMap.map, Global.map.tileWidth, Global.map.tileHeight, Global.map.mapWidth, Global.map.mapHeight, Global.gameMap.seed)
 
 		-- generate 10 items ontop of destructable walls
 		self:addItems(5, 3, 3)
@@ -266,8 +263,8 @@ server.runMatch = function(self, clients, dt)
 
 				-- take location from the bottom middle of the character sprite
 				local location = {
-					mapX = math.floor((Net.users[id].x + self.characterTile.width * 0.5) / self.window.width * Map.width),
-					mapY = math.floor((Net.users[id].y + self.characterTile.height) / self.window.height * Map.height)
+					mapX = math.floor((Net.users[id].x + Global.characterTile.width * 0.5) / Global.window.width * Map.width),
+					mapY = math.floor((Net.users[id].y + Global.characterTile.height) / Global.window.height * Map.height)
 				}
 				Bomb:addInstance(1, location.mapX, location.mapY)
 
@@ -295,7 +292,7 @@ server.runMatch = function(self, clients, dt)
 	-- if no players left alive go to lobby
 	if allPlayersDead == true then
 		self.gameIsRunning = false
-		Map:create(self.lobbyMap.map, 32, 32, 24, 16, 0)
+		Map:create(Global.map.tileImageName, Global.lobbyMap.map, Global.map.tileWidth, Global.map.tileHeight, Global.map.mapWidth, Global.map.mapHeight, Global.lobbyMap.seed)
 		Explosion:resetInstances()
 		Bomb:resetInstances()
 		Item:resetInstances()
@@ -325,7 +322,8 @@ server.initClient = function(self, id, inX, inY, inBaseSpeed, inMaxHealth, inBom
 	Net.users[id].isMoving = 0
 	Net.users[id].maxHealth = inMaxHealth
 	Net.users[id].health = Net.users[id].maxHealth
-	Net.users[id].actions = {up = false, down = false, left = false, right = false, bomb = false, prev = false, next = false}
+	Net.users[id].actions = {}
+	for k, v in pairs(Global.actions) do Net.users[id].actions[k] = false end
 end
 
 --[[
@@ -335,7 +333,7 @@ end
 ]]
 server.moveCheck = function(self, dt, id)
 	local tiles, map = Map.tiles, Map.values
-	local tileWidth, tileHeight = self.characterTile.width * 0.5, self.characterTile.height
+	local tileWidth, tileHeight = Global.characterTile.width * 0.5, Global.characterTile.height
 	local absOffsetX, absOffsetY = 10, 3
 	local actions = Net.users[id].actions
 

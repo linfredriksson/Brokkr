@@ -10,8 +10,8 @@ local map = {tileWidth = 0}
 	- mapHeight: the number of tiles the map should be high.
 	- seed: seed used for random functions. Same seed always give same maps.
 ]]
-map.create = function(self, mapName, tileWidth, tileHeight, mapWidth, mapHeight, seed)
-	local tileset = love.graphics.newImage("image/tiles.png")
+map.create = function(self, imageName, mapName, tileWidth, tileHeight, mapWidth, mapHeight, seed)
+	local tileset = love.graphics.newImage(imageName)
 
 	map.name = mapName
 	map.width = mapWidth
