@@ -370,7 +370,7 @@ server.explosionCheck = function(self, dt, id, sublimit)
 	if Explosion:playerCheck(Net.users[id], sublimit) then
 		Net.users[id].health =  Net.users[id].health - dt * 100 --stable dt is 0.01
 	end
-	if Net.users[id].health < 0 then
+	if Net.users[id].health <= 0 then
 		Net.users[id].greeted = false
 	end
 end
