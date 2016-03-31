@@ -332,31 +332,31 @@ end
 	- id: client id.
 ]]
 server.moveCheck = function(self, dt, id)
-	local tiles, map = Map.tiles, Map.values
 	local tileWidth, tileHeight = Global.characterTile.width * 0.5, Global.characterTile.height
 	local absOffsetX, absOffsetY = 10, 3
-	local actions = Net.users[id].actions
+	local user = Net.users[id]
+	local actions = user.actions
 
 	if actions.up or actions.down then
 		local dir = 1
-		Net.users[id].direction = 1
-		if actions.up then Net.users[id].direction = 2; dir = -1 end
-		local y = Net.users[id].y + dir * Net.users[id].speed * dt
+		user.direction = 1
+		if actions.up then user.direction = 2; dir = -1 end
+		local y = user.y + dir * user.speed * dt
 		local mapY = math.ceil((tileHeight + y + dir * absOffsetY) / Map.tileHeight)
-		local mapX1 = math.ceil((tileWidth + Net.users[id].x + absOffsetX) / Map.tileWidth)
-		local mapX2 = math.ceil((tileWidth + Net.users[id].x - absOffsetX) / Map.tileWidth)
-		if tiles[map[mapY][mapX1]].walkable and tiles[map[mapY][mapX2]].walkable then Net.users[id].y = y end
+		local mapX1 = math.ceil((tileWidth + user.x + absOffsetX) / Map.tileWidth)
+		local mapX2 = math.ceil((tileWidth + user.x - absOffsetX) / Map.tileWidth)
+		if Map:isWalkable(mapX1, mapY) and Map:isWalkable(mapX2, mapY) then user.y = y end
 	end
 
 	if actions.left or actions.right then
 		local dir = 1
-		Net.users[id].direction = 3
-		if actions.left then Net.users[id].direction = 4; dir = -1 end
-		local x = Net.users[id].x + dir * Net.users[id].speed * dt
+		user.direction = 3
+		if actions.left then user.direction = 4; dir = -1 end
+		local x = user.x + dir * user.speed * dt
 		local mapX = math.ceil((tileWidth + x + dir * absOffsetX) / Map.tileWidth)
-		local mapY1 = math.ceil((tileHeight + Net.users[id].y + absOffsetY) / Map.tileHeight)
-		local mapY2 = math.ceil((tileHeight + Net.users[id].y - absOffsetY) / Map.tileHeight)
-		if tiles[map[mapY1][mapX]].walkable and tiles[map[mapY2][mapX]].walkable then Net.users[id].x = x end
+		local mapY1 = math.ceil((tileHeight + user.y + absOffsetY) / Map.tileHeight)
+		local mapY2 = math.ceil((tileHeight + user.y - absOffsetY) / Map.tileHeight)
+		if Map:isWalkable(mapX, mapY1) and Map:isWalkable(mapX, mapY2) then user.x = x end
 	end
 end
 
