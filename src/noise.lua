@@ -1,10 +1,14 @@
+-- http://physbam.stanford.edu/cs448x/old/Procedural_Noise(2f)Perlin_Noise.html
+-- Noise is a form of peril noise as described in the link above.
+-- Used when generating procedurally generated maps.
+
 local noise = {
 	width = 0,
 	height = 0
 }
 
 --[[
-	Set the size of noise.
+	Set the size, number of rows and columns, of the 2d noise array.
 	- inWidth: width of 2d noise array
 	- inHeight: height of 2d noise array
 ]]
@@ -50,19 +54,15 @@ end
 noise.getSmooth = function(self, x, y)
 	local fractX = x - math.floor(x)
 	local fractY = y - math.floor(y)
-
 	local x1 = (math.floor(x) + self.width) % self.width
 	local y1 = (math.floor(y) + self.height) % self.height
-
 	local x2 = (x1 + self.width - 1) % self.width
 	local y2 = (y1 + self.height - 1) % self.height
-
 	local value = 0
 	value = value + fractX       * fractY       * self.noise[y1 + 1][x1 + 1] -- + 1 because lua starts with index 1
 	value = value + fractX       * (1 - fractY) * self.noise[y2 + 1][x1 + 1]
 	value = value + (1 - fractX) * fractY       * self.noise[y1 + 1][x2 + 1]
 	value = value + (1 - fractX) * (1 - fractY) * self.noise[y2 + 1][x2 + 1]
-
 	return value
 end
 

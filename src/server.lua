@@ -15,6 +15,12 @@ server.load = function(self)
 	self.commandResendInterval = 0.1
 	self.gameIsRunning = false
 	self.registeredClients = {}
+	-- number of different kinds of items
+	self.items = {
+		health = 5,
+		speed = 3,
+		reload = 3
+	}
 
 	-- create the lobby map
 	Map:create(Global.map.tileImageName, Global.lobbyMap.map, Global.map.tileWidth, Global.map.tileHeight, Global.map.mapWidth, Global.map.mapHeight, Global.lobbyMap.seed)
@@ -236,7 +242,7 @@ server.runLobby = function(self, clients, dt)
 		Map:create(Global.map.tileImageName, Global.gameMap.map, Global.map.tileWidth, Global.map.tileHeight, Global.map.mapWidth, Global.map.mapHeight, Global.gameMap.seed)
 
 		-- generate 10 items ontop of destructable walls
-		self:addItems(5, 3, 3)
+		self:addItems(self.items.health, self.items.speed, self.items.reload)
 
 		-- set game to running
 		self.gameIsRunning = true
@@ -253,18 +259,18 @@ server.runMatch = function(self, clients, dt)
 	Bomb:update(dt)
 	Explosion:update(dt)
 
-	for id, data in pairs(Net:connectedUsers()) do
-		if data.greeted == true then
+	for id, user in pairs(Net:connectedUsers()) do
+		if user.greeted == true then
 			allPlayersDead = false
 			-- place bomb key
-			if Net.users[id].actions.bomb  and Net.users[id].bombCountdown <= 0 then
-				Net.users[id].actions.bomb = false
-				Net.users[id].bombCountdown = Net.users[id].bombCooldownTime
+			if user.actions.bomb  and user.bombCountdown <= 0 then
+				user.actions.bomb = false
+				user.bombCountdown = user.bombCooldownTime
 
 				-- take location from the bottom middle of the character sprite
 				local location = {
-					mapX = math.floor((Net.users[id].x + Global.characterTile.width * 0.5) / Global.window.width * Map.width),
-					mapY = math.floor((Net.users[id].y + Global.characterTile.height) / Global.window.height * Map.height)
+					mapX = math.floor((user.x + Global.characterTile.width * 0.5) / Global.window.width * Map.width),
+					mapY = math.floor((user.y + Global.characterTile.height) / Global.window.height * Map.height)
 				}
 				Bomb:addInstance(1, location.mapX, location.mapY)
 
@@ -273,19 +279,19 @@ server.runMatch = function(self, clients, dt)
 				end
 			end
 
-			Net.users[id].bombCountdown = Net.users[id].bombCountdown - dt
-			if Net.users[id].bombCountdown < 0 then Net.users[id].bombCountdown = 0 end
+			user.bombCountdown = user.bombCountdown - dt
+			if user.bombCountdown < 0 then user.bombCountdown = 0 end
 
 			self:explosionCheck(dt, id, 0.99)
 			self:moveCheck(dt, id)
-			self:itemCheck(Net.users[id])
+			self:itemCheck(user)
 
-			Net.users[id].isMoving = 0
-			if Net.users[id].actions.up or Net.users[id].actions.down or Net.users[id].actions.left or Net.users[id].actions.right then
-				Net.users[id].isMoving = 1
+			user.isMoving = 0
+			if user.actions.up or user.actions.down or user.actions.left or user.actions.right then
+				user.isMoving = 1
 			end
 
-			clients[id] = Net.users[id].x .. "," .. Net.users[id].y .. "," .. Net.users[id].direction .. "," .. Net.users[id].isMoving .. "," .. Net.users[id].health .. "," .. Net.users[id].characterID
+			clients[id] = user.x .. "," .. user.y .. "," .. user.direction .. "," .. user.isMoving .. "," .. user.health .. "," .. user.characterID
 		end
 	end
 
