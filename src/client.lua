@@ -69,7 +69,7 @@ client.registerCMD = function(self)
 	Net:registerCMD("addBomb",
 		function(inTable, param, dt, id)
 			if Command:exists(inTable.id) then return end
-			Bomb:addInstance(1, inTable.mapX, inTable.mapY)
+			Bomb:addInstance(inTable.bombID, inTable.mapX, inTable.mapY)
 		end
 	)
 

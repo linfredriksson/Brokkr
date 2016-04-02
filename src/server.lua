@@ -272,10 +272,10 @@ server.runMatch = function(self, clients, dt)
 					mapX = math.floor((user.x + Global.characterTile.width * 0.5) / Global.window.width * Map.width),
 					mapY = math.floor((user.y + Global.characterTile.height) / Global.window.height * Map.height)
 				}
-				Bomb:addInstance(1, location.mapX, location.mapY)
+				Bomb:addInstance(user.bombID, location.mapX, location.mapY)
 
 				for id, data in pairs(Net:connectedUsers()) do
-					Command:add({mapX = location.mapX, mapY = location.mapY}, "addBomb", id)
+					Command:add({mapX = location.mapX, mapY = location.mapY, bombID = user.bombID}, "addBomb", id)
 				end
 			end
 
@@ -315,21 +315,23 @@ end
 	- inBombPlacementCooldown: time in seconds the client have to wait between placing bombs.
 ]]
 server.initClient = function(self, id, inX, inY, inBaseSpeed, inMaxHealth, inBombPlacementCooldown)
-	Net.users[id].greeted = true
-	Net.users[id].x = inX
-	Net.users[id].y = inY
-	Net.users[id].baseSpeed = inBaseSpeed
-	Net.users[id].speed = Net.users[id].baseSpeed
-	Net.users[id].baseBombCooldownTime = inBombPlacementCooldown -- time between player can play bombs
-	Net.users[id].bombCooldownTime = Net.users[id].baseBombCooldownTime
-	Net.users[id].bombCountdown = 0 -- time left until player can place new bomb
-	Net.users[id].characterID = self.registeredClients[id]
-	Net.users[id].direction = 1
-	Net.users[id].isMoving = 0
-	Net.users[id].maxHealth = inMaxHealth
-	Net.users[id].health = Net.users[id].maxHealth
-	Net.users[id].actions = {}
-	for k, v in pairs(Global.actions) do Net.users[id].actions[k] = false end
+	local user = Net.users[id]
+	user.greeted = true
+	user.x = inX
+	user.y = inY
+	user.baseSpeed = inBaseSpeed
+	user.speed = user.baseSpeed
+	user.baseBombCooldownTime = inBombPlacementCooldown -- time between player can play bombs
+	user.bombCooldownTime = user.baseBombCooldownTime
+	user.bombCountdown = 0 -- time left until player can place new bomb
+	user.characterID = self.registeredClients[id]
+	user.bombID = 1
+	user.direction = 1
+	user.isMoving = 0
+	user.maxHealth = inMaxHealth
+	user.health = user.maxHealth
+	user.actions = {}
+	for k, v in pairs(Global.actions) do user.actions[k] = false end
 end
 
 --[[
