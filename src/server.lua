@@ -189,7 +189,7 @@ server.runLobby = function(self, clients, dt)
 
 	for id, data in pairs(Net:connectedUsers()) do
 		if self.registeredClients[id] == nil then
-			self.registeredClients[id] = math.random(7)
+			self.registeredClients[id] = math.random(Global.characterTile.numberOfCharacters)
 		end
 
 		if data.greeted ~= true then
@@ -390,11 +390,11 @@ end
 ]]
 server.changeCharacterID = function(self, id, key)
 	if key == "next" then
-		Net.users[id].characterID = Net.users[id].characterID % 7 + 1
+		Net.users[id].characterID = Net.users[id].characterID % Global.characterTile.numberOfCharacters + 1
 	end
 
 	if key == "prev" then
-		Net.users[id].characterID = (Net.users[id].characterID + 5) % 7 + 1
+		Net.users[id].characterID = (Net.users[id].characterID + Global.characterTile.numberOfCharacters - 2) % Global.characterTile.numberOfCharacters + 1
 	end
 
 	self.registeredClients[id] = Net.users[id].characterID
