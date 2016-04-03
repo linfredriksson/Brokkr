@@ -19,7 +19,8 @@ server.load = function(self)
 	self.items = {
 		health = 5,
 		speed = 3,
-		reload = 3
+		reload = 3,
+		nuke = 1
 	}
 
 	-- create the lobby map
@@ -242,7 +243,7 @@ server.runLobby = function(self, clients, dt)
 		Map:create(Global.map.tileImageName, Global.gameMap.map, Global.map.tileWidth, Global.map.tileHeight, Global.map.mapWidth, Global.map.mapHeight, Global.gameMap.seed)
 
 		-- generate 10 items ontop of destructable walls
-		self:addItems(self.items.health, self.items.speed, self.items.reload)
+		self:addItems(self.items.health, self.items.speed, self.items.reload, self.items.nuke)
 
 		-- set game to running
 		self.gameIsRunning = true
@@ -426,9 +427,10 @@ end
 	- numberOfSpeed: number of speed items to create.
 	- numberOfReload: number of reload items to create.
 ]]
-server.addItems = function(self, numberOfHealth, numberOfSpeed, numberOfReload)
-	for i = 1, numberOfHealth + numberOfSpeed + numberOfReload do
-		local type = "reload"
+server.addItems = function(self, numberOfHealth, numberOfSpeed, numberOfReload, numberOfNuke)
+	for i = 1, numberOfHealth + numberOfSpeed + numberOfReload + numberOfNuke do
+		local type = "nuke"
+		if i <= numberOfHealth + numberOfSpeed + numberOfReload then type = "reload" end
 		if i <= numberOfHealth + numberOfSpeed then type = "speed" end
 		if i <= numberOfHealth then type = "health" end
 

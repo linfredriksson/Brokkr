@@ -8,6 +8,7 @@ bomb.initiate = function(self)
 	self:resetInstances()
 	self.type = {}
 	bomb:addType("image/bomb.png", 1, 2, 1.8)
+	bomb:addType("image/nuke.png", 1, 5, 1.8)
 end
 
 --[[
