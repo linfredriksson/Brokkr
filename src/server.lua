@@ -196,7 +196,7 @@ server.runLobby = function(self, clients, dt)
 		if data.greeted ~= true then
 			Net:send({}, "print", "Welcome to Brokkr! Now the server is up.", id)
 			Command:add({name = id}, "setClientName", id)
-			Command:add({map = Global.lobbyMap.map, seed = Global.lobbyMap.seed}, "setMap", id)
+			Command:add({map = Global.lobbyMap.map, seed = Global.lobbyMap.seed, matchNumber = Global.matchNumber}, "setMap", id)
 			local startX = Global.window.width * 0.5 - Global.characterTile.width * 0.5
 			local startY = Global.window.height * 0.5 - 100
 			self:initClient(id, startX, startY, 100, 100, 1)
@@ -232,7 +232,7 @@ server.runLobby = function(self, clients, dt)
 		local startPositionIndex = 0
 		for id, data in pairs(Net:connectedUsers()) do
 			Net:send({}, "print", "New game is starting", id)
-			Command:add({map = Global.gameMap.map, seed = Global.gameMap.seed}, "setMap", id)
+			Command:add({map = Global.gameMap.map, seed = Global.gameMap.seed, matchNumber = Global.matchNumber}, "setMap", id)
 			local startX = startPositions[startPositionIndex % 4 + 1].x * Map.tileWidth
 			local startY = startPositions[startPositionIndex % 4 + 1].y * Map.tileHeight - 10
 			self:initClient(id, startX, startY, 100, 100, 1)
@@ -299,6 +299,7 @@ server.runMatch = function(self, clients, dt)
 	-- if no players left alive go to lobby
 	if allPlayersDead == true then
 		self.gameIsRunning = false
+		Global.matchNumber = Global.matchNumber + 1
 		Map:create(Global.map.tileImageName, Global.lobbyMap.map, Global.map.tileWidth, Global.map.tileHeight, Global.map.mapWidth, Global.map.mapHeight, Global.lobbyMap.seed)
 		Explosion:resetInstances()
 		Bomb:resetInstances()
@@ -447,7 +448,7 @@ server.addItems = function(self, numberOfHealth, numberOfSpeed, numberOfReload, 
 		-- add item to server and send it to all connected clients
 		Item:add(type, x, y)
 		for id, data in pairs(Net:connectedUsers()) do
-			Command:add({type = type, x = x, y = y}, "addItem", id)
+			Command:add({type = type, x = x, y = y, matchNumber = Global.matchNumber}, "addItem", id)
 		end
 	end
 end

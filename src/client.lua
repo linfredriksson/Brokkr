@@ -61,7 +61,10 @@ client.registerCMD = function(self)
 			Map:create(Global.map.tileImageName, Global.gameMap.map, Global.map.tileWidth, Global.map.tileHeight, Global.map.mapWidth, Global.map.mapHeight, Global.gameMap.seed)
 			Explosion:resetInstances()
 			Bomb:resetInstances()
-			Item:resetInstances()
+			if inTable.matchNumber > Global.matchNumber then
+				Global.matchNumber = inTable.matchNumber
+				Item:resetInstances()
+			end
 		end
 	)
 
@@ -77,6 +80,10 @@ client.registerCMD = function(self)
 	Net:registerCMD("addItem",
 		function(inTable, param, dt, id)
 			if Command:exists(inTable.id) then return end
+			if inTable.matchNumber > Global.matchNumber then
+				Global.matchNumber = inTable.matchNumber
+				Item:resetInstances()
+			end
 			Item:add(inTable.type, inTable.x, inTable.y)
 		end
 	)

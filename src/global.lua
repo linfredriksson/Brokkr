@@ -38,7 +38,11 @@ local global = {
 	ip = "127.0.0.1",
 	port = 6789,
 	maxPingServer = 3000,
-	maxPingClient = 1000 -- ping time before it pings the server again
+	maxPingClient = 1000, -- ping time before it pings the server again
+	-- used to keep track of old and new items. when a new match starts
+	-- matchNumber is increased and only items with the same matchNumber
+	-- will be shown.
+	matchNumber = 1
 }
 
 return global

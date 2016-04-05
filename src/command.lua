@@ -27,7 +27,7 @@ end
 Command.exists = function(self, id)
 	Net:send({id = id}, "command_recieved", "", Net.client.ip)
 	if self.commands[id] ~= nil then return 1 end
-	self.commands[id] = 1 -- save something in position commandID
+	self.commands[id] = 1 -- save something to show command with this id exists
 	return nil
 end
 
