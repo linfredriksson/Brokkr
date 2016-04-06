@@ -42,7 +42,8 @@ local global = {
 	-- used to keep track of old and new items. when a new match starts
 	-- matchNumber is increased and only items with the same matchNumber
 	-- will be shown.
-	matchNumber = 1
+	matchNumber = 1,
+	font = love.graphics.newFont("font/Ash.ttf", 50)
 }
 
 return global

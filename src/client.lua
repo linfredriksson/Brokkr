@@ -15,6 +15,8 @@ math.randomseed(os.time())
 ]]
 client.load = function(self)
 	self.clientName = "" -- the name assigned to the client by the server in the form "clientIp:clientPort"
+	self.emptyOnScreenMessage = {message = "", r = 0, g = 0, b = 0, a = 0}
+	self.onScreenMessage = self.emptyOnScreenMessage
 	self.players = {}
 
 	-- setup networking and connect to server
@@ -38,6 +40,8 @@ client.load = function(self)
 	-- Inverse of Global.actions, used to check if a pressed key is bound to a action
 	self.keys = {}
 	for k, v in pairs(Global.actions) do self.keys[v] = k end
+
+	love.graphics.setFont(Global.font)
 end
 
 --[[
@@ -49,6 +53,14 @@ client.registerCMD = function(self)
 		function(inTable, param, dt, id)
 			if Command:exists(inTable.id) then return end
 			self.clientName = inTable.name
+		end
+	)
+
+	-- Used by server to send text to be shown on clients
+	Net:registerCMD("onScreenMessage",
+		function(inTable, param, dt, id)
+			if Command:exists(inTable.id) then return end
+			self.onScreenMessage = {message = inTable.message, r = inTable.r, g = inTable.g, b = inTable.b, a = inTable.a}
 		end
 	)
 
@@ -65,6 +77,7 @@ client.registerCMD = function(self)
 				Global.matchNumber = inTable.matchNumber
 				Item:resetInstances()
 			end
+			self.onScreenMessage = self.emptyOnScreenMessage
 		end
 	)
 
@@ -110,6 +123,14 @@ client.registerCMD = function(self)
 					self.players[k].characterID = 0
 					self.players[k].maxHealth = 100
 					self.players[k].health = self.players[k].maxHealth
+					self.players[k].healthBar = {
+						r = 255, g = 0, b = 0, a = 100,
+						width = 10, height = Global.characterTile.height
+					}
+					if k == self.clientName then
+						self.players[k].healthBar.r = 0
+						self.players[k].healthBar.g = 255
+					end
 				end
 
 				-- update character sprite if player have changed sprite id
@@ -121,6 +142,7 @@ client.registerCMD = function(self)
 				-- player is still in the network
 				self.players[k].alive = true
 				self.players[k].x, self.players[k].y, self.players[k].direction, self.players[k].isMoving, self.players[k].health = player.x, player.y, player.direction, player.isMoving, player.health
+				self.players[k].healthBar.height = Global.characterTile.height * (self.players[k].health / self.players[k].maxHealth)
 			end
 
 			-- check to see which players are still in the game
@@ -206,6 +228,7 @@ client.update = function(self, dt)
 	Explosion:update(dt)
 
 	for k, v in pairs(self.players) do
+		-- if player character is moving update animation, else set to idle pose
 		if v.isMoving == "1" then
 			v.animation[tonumber(v.direction)]:update(dt)
 		else
@@ -251,14 +274,10 @@ client.draw = function(self)
 
 	-- render health bars
 	for k, v in pairs(self.players) do
-		-- set opponents health bar to read, and players own health bar to green
-		love.graphics.setColor(255, 0, 0, 100)
-		if k == self.clientName then love.graphics.setColor(0, 255, 0, 100) end
-		local healthScale = v.health / v.maxHealth
+		love.graphics.setColor(v.healthBar.r, v.healthBar.g, v.healthBar.b, v.healthBar.a)
 		love.graphics.rectangle("fill",
-			v.x + Global.characterTile.width,
-			v.y + Global.characterTile.height * (1 - healthScale),
-			10, Global.characterTile.height * healthScale)
+			v.x + Global.characterTile.width, v.y + (Global.characterTile.height - v.healthBar.height),
+			v.healthBar.width, v.healthBar.height)
 	end
 	love.graphics.setColor(255, 255, 255, 255) -- reset color to white
 
@@ -270,6 +289,22 @@ client.draw = function(self)
 			(v.y + 0.5) * Map.tileHeight - v.type.tileHeight * 0.5
 		)
 	end
+
+	self:printOnscreenMessage(self.onScreenMessage.r, self.onScreenMessage.g, self.onScreenMessage.b, self.onScreenMessage.a, self.onScreenMessage.message)
+end
+
+--[[
+	Print a match result message.
+	- r: red color value of text.
+	- g: green color value of text.
+	- b: blue color value of text.
+	- a: alpha color value of text.
+	- message: message to be shown on screen.
+]]
+client.printOnscreenMessage = function(self, r, g, b, a, message)
+	love.graphics.setColor(r, g, b, a)
+	love.graphics.print(message, Global.map.tileWidth + 2, Global.window.height - Global.font:getHeight() + 8 - Global.map.tileHeight)
+	love.graphics.setColor(255, 255, 255, 255)
 end
 
 --[[
