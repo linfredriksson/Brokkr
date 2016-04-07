@@ -53,6 +53,9 @@ client.registerCMD = function(self)
 		function(inTable, param, dt, id)
 			if Command:exists(inTable.id) then return end
 			self.clientName = inTable.name
+			-- reinitialize player incase it is already created, clientName is needed
+			-- to correctly identify which character belongs to a specific client
+			self.players[self.clientName] = nil
 		end
 	)
 

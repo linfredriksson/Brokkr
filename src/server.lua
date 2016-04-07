@@ -22,6 +22,21 @@ server.load = function(self)
 		reload = 3,
 		nuke = 1
 	}
+	-- victory and defeat messages that will be sent to all connected clients at the end of a match
+	self.result = {
+		victory = {message = "VICTORY", r = 0, g = 255, b = 0, a = 0},
+		defeat = {message = "DEFEAT", r = 255, g = 0, b = 0, a = 0}
+	}
+	self.minAlivePlayers = 1 -- match ends when at most this number of players are still alive
+	self.minNumberOfPlayers = 2 -- start new game when atleast this number of players are connected
+	self.countdownToLobby = 5 -- in the end of a match, time before returning to lobby
+	self.lobbyCountdown = self.countdownToLobby -- countdown before returning to lobby
+
+	-- temp debugging code, if true run game with only one player
+	if false then
+		self.minAlivePlayers = 0
+		self.minNumberOfPlayers = 1
+	end
 
 	-- create the lobby map
 	Map:create(Global.map.tileImageName, Global.lobbyMap.map, Global.map.tileWidth, Global.map.tileHeight, Global.map.mapWidth, Global.map.mapHeight, Global.lobbyMap.seed)
@@ -220,7 +235,7 @@ server.runLobby = function(self, clients, dt)
 	end
 
 	-- if all players are in the start square on the map, then start a new match
-	if allPlayersInStartZone == true and numberOfPlayers > 0 then
+	if allPlayersInStartZone == true and numberOfPlayers >= self.minNumberOfPlayers then
 		Global.gameMap.seed = os.time()
 		local startPositions = {
 			{x = 1, y = 1},
@@ -256,13 +271,13 @@ end
 	- dt: delta time, time in seconds since last update.
 ]]
 server.runMatch = function(self, clients, dt)
-	local allPlayersDead = true
+	local numberOfPlayersStillAlive = 0
 	Bomb:update(dt)
 	Explosion:update(dt)
 
 	for id, user in pairs(Net:connectedUsers()) do
 		if user.greeted == true then
-			allPlayersDead = false
+			numberOfPlayersStillAlive = numberOfPlayersStillAlive + 1
 			-- place bomb key
 			if user.actions.bomb  and user.bombCountdown <= 0 then
 				user.actions.bomb = false
@@ -296,9 +311,29 @@ server.runMatch = function(self, clients, dt)
 		end
 	end
 
+	-- countdown before returning to lobby in the end of a match
+	if numberOfPlayersStillAlive <= self.minAlivePlayers and self.gameIsRunning == true then
+		-- check to see if any player have won, if so send messages to winning and losing clients
+		if self.lobbyCountdown == self.countdownToLobby then
+			for id, data in pairs(Net:connectedUsers()) do
+				local m = self.result.defeat
+				--if data.greeted == true then m = self.result.victory end -- if player still alive, send victory message
+				if data.greeted == true then
+					Command:add({message = "VICTORY", r = 0, g = 255, b = 0, a = 255}, "onScreenMessage", id)
+				else
+					Command:add({message = "DEFEAT", r = 255, g = 0, b = 0, a = 255}, "onScreenMessage", id)
+				end
+			end
+		end
+		-- countdown before returning to lobby
+		self.lobbyCountdown = self.lobbyCountdown - dt
+	end
+
 	-- if no players left alive go to lobby
-	if allPlayersDead == true then
+	if numberOfPlayersStillAlive <= self.minAlivePlayers and self.lobbyCountdown <= 0 then
+		for id, data in pairs(Net:connectedUsers()) do data.greeted = false end -- kill any still living players
 		self.gameIsRunning = false
+		self.lobbyCountdown = self.countdownToLobby
 		Global.matchNumber = Global.matchNumber + 1
 		Map:create(Global.map.tileImageName, Global.lobbyMap.map, Global.map.tileWidth, Global.map.tileHeight, Global.map.mapWidth, Global.map.mapHeight, Global.lobbyMap.seed)
 		Explosion:resetInstances()
