@@ -176,7 +176,7 @@ end
 ]]
 client.generateCharacterAnimation = function(self, id, duration)
 	local frameDuration = duration / 3
-	local row = math.floor(id / 5) * 4
+	local row = math.floor((id - 1) / 4) * 4
 	local col = (id - 1) % 4
 	col = 1 + col * 3 .. "-" .. 3 + col * 3
 	return {
