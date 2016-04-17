@@ -18,7 +18,7 @@ local global = {
 		grid = nil,
 		width = 32,
 		height = 32,
-		numberOfCharacters = 7
+		numberOfCharacters = 11
 	},
 	map = {
 		tileImageName = "image/tiles.png",
