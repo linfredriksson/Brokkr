@@ -10,6 +10,7 @@ Item.initiate = function(self)
 	self:addType("speed", 0, 255, 0, 50, function(player) player.speed = player.baseSpeed * 1.1 end)
 	self:addType("reload", 0, 0, 255, 50, function(player) player.bombCooldownTime = player.baseBombCooldownTime * 0.75 end)
 	self:addType("nuke", 255, 255, 0, 50, function(player) player.bombID = 2 end)
+	self:addType("easteregg", 255, 255, 255, 50, function(player) player.characterID = 12 end)
 end
 
 --[[

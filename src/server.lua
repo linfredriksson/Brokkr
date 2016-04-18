@@ -20,7 +20,8 @@ server.load = function(self)
 		health = 5,
 		speed = 3,
 		reload = 3,
-		nuke = 1
+		nuke = 1,
+		easteregg = 1
 	}
 	-- victory and defeat messages that will be sent to all connected clients at the end of a match
 	self.result = {
@@ -258,7 +259,7 @@ server.runLobby = function(self, clients, dt)
 		Map:create(Global.map.tileImageName, Global.gameMap.map, Global.map.tileWidth, Global.map.tileHeight, Global.map.mapWidth, Global.map.mapHeight, Global.gameMap.seed)
 
 		-- generate 10 items ontop of destructable walls
-		self:addItems(self.items.health, self.items.speed, self.items.reload, self.items.nuke)
+		self:addItems(self.items.health, self.items.speed, self.items.reload, self.items.nuke, self.items.easteregg)
 
 		-- set game to running
 		self.gameIsRunning = true
@@ -463,9 +464,10 @@ end
 	- numberOfSpeed: number of speed items to create.
 	- numberOfReload: number of reload items to create.
 ]]
-server.addItems = function(self, numberOfHealth, numberOfSpeed, numberOfReload, numberOfNuke)
-	for i = 1, numberOfHealth + numberOfSpeed + numberOfReload + numberOfNuke do
-		local type = "nuke"
+server.addItems = function(self, numberOfHealth, numberOfSpeed, numberOfReload, numberOfNuke, numberOfEasteregg)
+	for i = 1, numberOfHealth + numberOfSpeed + numberOfReload + numberOfNuke + numberOfEasteregg do
+		local type = "easteregg"
+		if i <= numberOfHealth + numberOfSpeed + numberOfReload + numberOfNuke then type = "nuke" end
 		if i <= numberOfHealth + numberOfSpeed + numberOfReload then type = "reload" end
 		if i <= numberOfHealth + numberOfSpeed then type = "speed" end
 		if i <= numberOfHealth then type = "health" end
