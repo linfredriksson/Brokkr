@@ -109,6 +109,7 @@ client.registerCMD = function(self)
 		function(inTable, param, dt, id)
 			if Command:exists(inTable.id) then return end
 			Item:remove(inTable.x, inTable.y)
+			love.audio.play(love.audio.newSource("sound/press.wav"))
 		end
 	)
 
@@ -153,6 +154,7 @@ client.registerCMD = function(self)
 			for k, v in pairs(self.players) do
 				if self.players[k].alive == false then
 					self.players[k] = nil
+					love.audio.play(love.audio.newSource("sound/wilhelmScream.mp3"))
 				else
 					self.players[k].alive = false
 				end

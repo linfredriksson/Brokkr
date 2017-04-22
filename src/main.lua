@@ -4,6 +4,8 @@ run = require "menu"
 	Initialising function.
 ]]
 function love.load()
+	love.audio.setVolume(.5)
+	love.audio.play(love.audio.newSource("sound/music.mp3"))
 	run:load()
 end
 

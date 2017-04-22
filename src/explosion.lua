@@ -68,6 +68,7 @@ explosion.addInstance = function(self, inDirections, inPosX, inPosY, inSpreadDis
 		animation = anim8.newAnimation(inType.grid("1-" .. inType.numberOfTiles, 1), inType.frameDuration)
 	}
 	self.instances[#self.instances + 1] = instance
+	love.audio.play(love.audio.newSource("sound/explosion.mp3"))
 end
 
 --[[
