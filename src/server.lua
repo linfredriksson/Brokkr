@@ -11,6 +11,7 @@ local server = {}
 	Initialising function. Run when server starts.
 ]]
 server.load = function(self)
+	love.audio.setVolume(0)
 	self.totalDeltaTime, self.updateTimeStep = 0, 0.01
 	self.commandResendInterval = 0.1
 	self.gameIsRunning = false

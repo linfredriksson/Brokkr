@@ -190,6 +190,17 @@ client.generateCharacterAnimation = function(self, id, duration)
 end
 
 --[[
+	Turn of sound when window is out of focus.
+]]
+function love.focus(f)
+  if f then
+    love.audio.setVolume(.5)
+  else
+    love.audio.setVolume(0)
+  end
+end
+
+--[[
 	Mouse down function.
 	- x: x coordinate of mouse pointer.
 	- y: y coordinate of mouse pointer.
